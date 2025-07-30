@@ -4,7 +4,16 @@
 
 1. [Что как делать по этапам?](#что-как-делать-по-этапам-возможно-потребует-редактирования)
 2. [Как выглядит отдельный компонент React-а и какова его структура и возможности](#как-в-общем-выглядит-отдельный-компонент-react-а-и-каковы-его-структура-и-возможности)
-3. [Подробное описание технологий, которые нам придётся использовать, с примерами](#подробное-описание-технологий-которые-нам-придётся-использовать-с-примерами)
+3. [Встраивание Typescript](#встраивание-typescript)
+   1. [Настройка проекта](#1-настройка-проекта)
+   2. [Базовые типы Typescript](#2-базовые-типы-typescript)
+   3. [Типизация компонентов](#3-типизация-компонентов)
+   4. [Типизация состояния UseState-hook](#4-типизация-состояния-usestate-hook)
+   5. [Типизация обработчиков событий (Event handlers)](#5-типизация-обработчиков-событий-event-handlers)
+   6. [Типизация ссылок refs](#6-типизация-ссылок-refs)
+   7. [Распространённый типы JSX и React](#7-распространенные-типы-jsx-и-react)
+   8. [Советы и лучшие практики](#8-советы-и-лучшие-практики)
+4. [Подробное описание технологий, которые нам придётся использовать, с примерами](#подробное-описание-технологий-которые-нам-придётся-использовать-с-примерами)
    1. [Функциональные компоненты](#функциональные-компоненты)
    2. [JSX (JavaScript XML)](#jsx-javascript-xml)
    3. [useState Hook](#usestate-hook)
@@ -13,7 +22,7 @@
    6. [useEffect Hook](#useeffect-hook)
    7. [Event Handling (Обработка событий)](#event-handling-обработка-событий)
    8. [HTTP-клиент (запросы на бэк)](#http-клиент-запросы-на-бэк)
-4. [React в общем](#react-в-общем)
+5. [React в общем](#react-в-общем)
    1. [Как выглядит Workflow на React-е](#как-выглядит-workflow-на-react-е)
    2. [Как программист добавляет элементы, файлы, компоненты, как кастомизирует их](#как-программист-добавляет-элементы-файлы-компоненты-как-кастомизирует-их)
    3. [В чём преимущество React перед всеми остальными](#в-чём-преимущество-react-перед-всеми-остальными)
@@ -154,6 +163,329 @@ function ChooseChatPage(props) {
 
 export default ChooseChatPage;
 ```
+
+### Встраивание Typescript
+
+TypeScript (TS) в комбинации с React значительно улучшает процесс разработки, делая код более надежным, читаемым и удобным в поддержке. Он добавляет статическую типизацию в JavaScript, что позволяет обнаруживать ошибки на этапе компиляции, а не в рантайме.
+
+Вот подробный обзор TypeScript в сочетании с React:
+
+#### 1. Настройка проекта
+
+**Создание нового проекта:**
+Самый простой способ начать — использовать Create React App или Vite с шаблоном TypeScript:
+
+- **Create React App:**
+  ```bash
+  npx create-react-app my-app --template typescript
+  cd my-app
+  npm start
+  ```
+
+#### 2. Базовые типы TypeScript
+
+- **Примитивы:** `string`, `number`, `boolean`, `null`, `undefined`, `symbol`, `bigint`.
+- **Массивы:** `number[]` или `Array<number>`.
+- **Объекты:** Определяются с помощью `interface` или `type`.
+- **Union Types:** `string | number` (значение может быть строкой или числом).
+- **Literal Types:** `("success" | "error")` (значение может быть только "success" или "error").
+- **Interfaces vs. Types:**
+  - `interface` лучше подходит для определения формы объектов и классов, поддерживает "declaration merging" и `extends`.
+  - `type` более гибок, может использоваться для псевдонимов примитивов, объединений, пересечений и кортежей.
+
+#### 3. Типизация компонентов
+
+**Определение пропсов:**
+Используйте `interface` или `type` для описания ожидаемых пропсов компонента.
+
+```typescript
+// Option 1: Using an interface
+interface MyComponentProps {
+  name: string;
+  age: number;
+  isStudent?: boolean;
+}
+
+const MyComponent = ({ name, age, isStudent }: MyComponentProps) => {
+  return (
+    <div>
+      <p>Name: {name}</p>
+      <p>Age: {age}</p>
+      {isStudent && <p>Student</p>}
+    </div>
+  );
+};
+
+// Option 2: Using a type alias (аналогично)
+type MyOtherComponentProps = {
+  title: string;
+  count: number;
+};
+
+const MyOtherComponent = ({ title, count }: MyOtherComponentProps) => {
+  return (
+    <div>
+      <h2>{title}</h2>
+      <p>Count: {count}</p>
+    </div>
+  );
+};
+```
+
+**Пропс `children`:**
+Если ваш компонент принимает `children`, вы можете типизировать его с помощью `React.ReactNode`.
+
+```typescript
+import React from "react";
+
+interface CardProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Card = ({ title, children }: CardProps) => {
+  return (
+    <div className="card">
+      <h3>{title}</h3>
+      {children}
+    </div>
+  );
+};
+```
+
+Предпочтительный способ (если `children` не нужен или явно типизирован):
+
+```typescript
+interface GreetingProps {
+  message: string;
+}
+
+const Greeting = ({ message }: GreetingProps) => {
+  return <h1>{message}</h1>;
+};
+```
+
+#### 4. Типизация состояния (useState Hook)
+
+TypeScript обычно хорошо выводит тип состояния из начального значения.
+
+```typescript
+import React, { useState } from "react";
+
+const MyCounter = () => {
+  const [count, setCount] = useState(0); // count: number, setCount: React.Dispatch<React.SetStateAction<number>>
+
+  const [name, setName] = useState(""); // name: string, setName: React.Dispatch<React.SetStateAction<string>>
+
+  const [user, setUser] = useState<{ id: number; name: string } | null>(null);
+  // user: { id: number; name: string } | null
+  // setUser: React.Dispatch<React.SetStateAction<{ id: number; name: string } | null>>
+
+  // Явное указание типа, если начальное значение не дает достаточной информации
+  const [items, setItems] = useState<string[]>([]); // items: string[]
+
+  const fetchUser = async () => {
+    const response = await fetch("/api/user");
+    const data = await response.json();
+    setUser(data);
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <p>Name: {name}</p>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      {user ? <p>User: {user.name}</p> : <p>No user</p>}
+      <button onClick={fetchUser}>Fetch User</button>
+    </div>
+  );
+};
+```
+
+#### 5. Типизация обработчиков событий (Event Handlers)
+
+React предоставляет синтетические события, которые являются обертками над нативными событиями браузера. TypeScript имеет встроенные типы для этих событий.
+
+```typescript
+import React from "react";
+
+const EventExample = () => {
+  // Типизация события клика (например, для кнопки)
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("Button clicked!", event.currentTarget);
+  };
+
+  // Типизация события изменения (например, для input)
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Input value:", event.target.value);
+  };
+
+  // Типизация события отправки формы
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Предотвращаем перезагрузку страницы
+    console.log("Form submitted!");
+  };
+
+  // Типизация события клавиатуры
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      console.log("Enter pressed!", event.currentTarget.value);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <button onClick={handleClick}>Click Me</button>
+      <input type="text" onChange={handleChange} placeholder="Type something" />
+      <input
+        type="text"
+        onKeyPress={handleKeyPress}
+        placeholder="Press Enter"
+      />
+      <button type="submit">Submit Form</button>
+    </form>
+  );
+};
+```
+
+Если TypeScript может вывести тип события (например, для инлайн-обработчиков), явное указание типа не всегда требуется. Однако для именованных функций-обработчиков это хорошая практика.
+
+#### 6. Типизация ссылок (Refs)
+
+Хук `useRef` используется для доступа к DOM-элементам или для хранения изменяемых значений, которые не вызывают повторный рендеринг.
+
+**Доступ к DOM-элементам:**
+
+```typescript
+import React, { useRef, useEffect } from "react";
+
+const MyInput = () => {
+  // Типизация ref для HTMLInputElement. Изначально ref.current будет null.
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Проверяем, что ref.current существует, прежде чем использовать его
+    if (inputRef.current) {
+      inputRef.current.focus(); // Фокусируем инпут при монтировании компонента
+    }
+  }, []);
+
+  return <input ref={inputRef} type="text" placeholder="I will be focused" />;
+};
+```
+
+**Хранение изменяемых значений:**
+
+```typescript
+import React, { useRef, useState } from "react";
+
+const ClickCounter = () => {
+  // Ref для хранения количества кликов, не вызывая ререндер
+  const clickCountRef = useRef(0); // clickCountRef.current: number
+
+  const [renderCount, setRenderCount] = useState(0); // Для демонстрации ререндера
+
+  const handleClick = () => {
+    clickCountRef.current++; // Изменяем значение ref
+    console.log("Total clicks (via ref):", clickCountRef.current);
+    setRenderCount((prev) => prev + 1); // Вызываем ререндер для обновления UI
+  };
+
+  return (
+    <div>
+      <button onClick={handleClick}>Click Me</button>
+      <p>Component has re-rendered {renderCount} times.</p>
+      {/* Значение ref не отображается напрямую, так как оно не вызывает ререндер */}
+      <p>Check console for total clicks via ref.</p>
+    </div>
+  );
+};
+```
+
+#### 7. Распространенные типы JSX и React
+
+При работе с JSX в TypeScript вы столкнетесь с несколькими важными типами:
+
+- **`React.ReactNode`:**
+
+  - **Что это:** Это самый общий тип, который может быть чем угодно, что React может отобразить. Он включает: JSX-элементы (`<div />`), строки (`"Hello"`), числа (`123`), булевы значения (`true`/`false`), `null`, `undefined`, фрагменты (`<>...</>`), порталы, а также массивы из всех этих типов.
+  - **Когда использовать:** Идеально подходит для типизации пропса `children` или любого другого пропса, который может принимать различное содержимое для рендеринга.
+  - **Пример:**
+
+    ```typescript
+    interface ContainerProps {
+      header: React.ReactNode; // Может быть строкой, элементом, или ничем
+      children: React.ReactNode; // Может быть любым содержимым
+      footer?: React.ReactNode; // Опциональный футер
+    }
+
+    const Container = ({ header, children, footer }: ContainerProps) => (
+      <div>
+        <div className="header">{header}</div>
+        <main>{children}</main>
+        {footer && <div className="footer">{footer}</div>}
+      </div>
+    );
+
+    // Использование:
+    <Container header={<h2>My Title</h2>}>
+      <p>Some content.</p>
+      <p>More content.</p>
+    </Container>
+
+    <Container header="Simple Header">
+      <span>Just a span.</span>
+    </Container>
+    ```
+
+- **`React.ComponentProps<typeof MyComponent>` или `<'div'>`:**
+
+  - **Что это:** Утилитарный тип, который позволяет получить типы пропсов существующего компонента или встроенного HTML-элемента.
+  - **Когда использовать:** Полезно для переиспользования типов пропсов или для создания оберток, которые передают все пропсы дочернему компоненту.
+  - **Пример:**
+
+    ```typescript
+    import React from "react";
+
+    interface CustomButtonProps {
+      label: string;
+      onClick: () => void;
+    }
+
+    const CustomButton = ({ label, onClick }: CustomButtonProps) => (
+      <button onClick={onClick}>{label}</button>
+    );
+
+    // Получаем типы пропсов CustomButton
+    type InheritedButtonProps = React.ComponentProps<typeof CustomButton>;
+
+    // Или для стандартного HTML-элемента
+    type DivProps = React.ComponentProps<"div">;
+
+    const SpecialDiv = (props: DivProps) => (
+      <div {...props} style={{ border: "1px solid black", padding: "10px" }}>
+        {props.children}
+      </div>
+    );
+
+    // Использование:
+    <SpecialDiv id="my-id" className="my-class">
+      This is a special div.
+    </SpecialDiv>;
+    ```
+
+#### 8. Советы и лучшие практики
+
+- **Включайте `strict` mode:** Установите `strict: true` в вашем `tsconfig.json`. Это включает все строгие проверки типов и значительно повышает надежность вашего кода.
+- **Избегайте `any`:** По возможности избегайте использования типа `any`. `any` отключает все проверки типов для переменной, что сводит на нет преимущества TypeScript.
+- **Используйте `interface` или `type` для пропсов и состояния:** Всегда явно определяйте типы для пропсов и состояния ваших компонентов.
+- **Generics (Обобщения):** Используйте обобщения для создания переиспользуемых компонентов или хуков, которые могут работать с разными типами данных, сохраняя при этом типобезопасность.
+- **Осторожное использование утверждений типа (`as`):** Используйте `as` (type assertion) только тогда, когда вы абсолютно уверены в типе переменной, и TypeScript не может вывести его самостоятельно. Чрезмерное использование `as` может скрыть реальные ошибки.
 
 ## Как в общем выглядит отдельный компонент `React`-а и каковы его структура и возможности
 

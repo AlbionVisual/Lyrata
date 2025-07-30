@@ -1,0 +1,15 @@
+.PageLayout {
+
+}
+
+.PageLayoutGoBack {
+    position: absolute;
+    top:1vw;
+    left:1vw;
+    cursor: pointer;
+    opacity: 5%;
+}
+
+.PageLayoutGoBack:hover {
+    opacity: 100%;
+}

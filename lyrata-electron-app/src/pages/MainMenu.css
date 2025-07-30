@@ -1,0 +1,84 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.AppName {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 4vh;
+    color:black;
+}
+
+.AppNameText {
+    font-size: 25vw;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    transform: translateX(-14%);
+    color: black;
+}
+
+.AppNameLabel {
+    font-size: 1.5vw;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    color: #555;
+    margin-top: -3vw;
+    max-width: 80vw;
+    line-height: 1.2;
+    color: black;
+}
+
+.MenuListItem {
+    font-size: 2.5vw;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    margin: 0vw;
+    margin-bottom: 1vh;
+    max-width: 80vw;
+    line-height: 1.2;
+    transform: translateX(-10%);
+    cursor: pointer;
+    color: black;
+}
+
+.MenuItemSelected {
+    opacity: 100%;
+}
+
+.MenuItemDeselected {
+    opacity: 20%;
+}
+
+/* Для маленьких экранов */
+@media (max-width: 768px) {
+    .AppNameText {
+        font-size: 30vw;
+        line-height: 0.8;
+        transform: translateX(-5%);
+    }
+
+    .AppNameLabel {
+        font-size: 2.7vw;
+        margin-top: -1vw;
+        max-width: 90vw;
+    }
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
