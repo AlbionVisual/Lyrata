@@ -53,7 +53,7 @@ const purifyConfig = {
 };
 
 export function sanitizeHTML(htmlToSanitize) {
-  const sanitizedHtml = DOMPurify.sanitize(htmlToSanitize, purifyConfigHard);
+  const sanitizedHtml = DOMPurify.sanitize(htmlToSanitize, purifyConfig);
   return sanitizedHtml;
 }
 

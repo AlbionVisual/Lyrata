@@ -4,16 +4,16 @@ import { text_vanka } from "../texts/vanka";
 import parseMarkdown from "../texts/ParseMarkdown";
 import ScrollableText from "../components/ScrollableText";
 import "./ReadingPage.css";
-parseHTML(parseMarkdown(text_vanka));
+
+import {
+  BlockedDataInterface,
+  changeSelection,
+} from "../texts/ChangeSelection";
+import { validateHeaderName } from "node:http";
 
 interface ReadingPageProps {
   selectionSize?: number;
   selectionStep?: number;
-}
-interface BlockedDataInterface {
-  tagName: string;
-  selectionPos?: number[];
-  text: string;
 }
 
 function ReadingPage({
@@ -23,90 +23,40 @@ function ReadingPage({
   const [blockedData, setBlockedData] = useState<BlockedDataInterface[]>(
     parseHTML(parseMarkdown(text_vanka))
   );
+  const [selectionPos, setSelectionPos] = useState<number | undefined>();
+  const [magnetizeInstanteniouslyTo, setMagnetizeInstanteniouslyTo] = useState<
+    HTMLElement | undefined
+  >();
   const selectionTagRef = useRef<HTMLDivElement>(null);
   const selectionIndexRef = useRef(0);
-
-  const changeSelection = useCallback((amount: number) => {
-    console.log(selectionIndexRef.current);
-    const copy = [...blockedData];
-
-    if (!selectionIndexRef.current) {
-      // Если по какой-то причине нету id текущего блока
-      selectionIndexRef.current = 0;
-    }
-    let currentBlock = copy[selectionIndexRef.current];
-
-    if (!currentBlock.selectionPos) {
-      // Если в нашем блоке ещё не установлен выделитель (либо мы только перекинулись на этот блок)
-      if (amount > 0)
-        currentBlock.selectionPos = [
-          0,
-          copy[selectionIndexRef.current].text.length > selectionSize
-            ? selectionSize
-            : copy[selectionIndexRef.current].text.length,
-        ];
-      else if (amount < 0)
-        currentBlock.selectionPos = [
-          copy[selectionIndexRef.current].text.length - selectionSize < 0
-            ? 0
-            : copy[selectionIndexRef.current].text.length - selectionSize,
-          copy[selectionIndexRef.current].text.length,
-        ];
-      setBlockedData(copy);
-      return;
-    }
-
-    if (
-      currentBlock.selectionPos[1] >= currentBlock.text.length &&
-      amount > 0
-    ) {
-      // Если выделитель уже в конце текущего блока
-      if (selectionIndexRef.current + 1 >= copy.length) return; // в конце текста...
-      selectionIndexRef.current += 1;
-      currentBlock.selectionPos = undefined;
-      changeSelection(amount);
-      return;
-    }
-
-    if (currentBlock.selectionPos[0] <= 0 && amount < 0) {
-      // Если выделитель уже в начале текущего блока
-      if (selectionIndexRef.current - 1 < 0) return; // в начале текста...
-      selectionIndexRef.current -= 1;
-      currentBlock.selectionPos = undefined;
-      changeSelection(amount);
-      return;
-    }
-
-    // Остался только вариант, когда выделитель нужно переместить
-    currentBlock.selectionPos[0] += amount;
-    currentBlock.selectionPos[1] += amount;
-    if (currentBlock.selectionPos[1] > currentBlock.text.length) {
-      currentBlock.selectionPos[1] = currentBlock.text.length;
-      currentBlock.selectionPos[0] =
-        currentBlock.selectionPos[1] - selectionSize > 0
-          ? currentBlock.selectionPos[1] - selectionSize
-          : 0;
-    }
-    if (currentBlock.selectionPos[0] < 0) {
-      currentBlock.selectionPos[0] = 0;
-      currentBlock.selectionPos[1] =
-        currentBlock.selectionPos[0] + selectionSize < currentBlock.text.length
-          ? currentBlock.selectionPos[0] + selectionSize
-          : currentBlock.text.length;
-    }
-    setBlockedData(copy);
-  }, []);
+  const pressedKeys = useRef<Set<string>>(new Set<string>());
 
   const handelKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (pressedKeys.current.has(event.key)) return;
+      const copy = [...blockedData];
       switch (event.key) {
         case "ArrowRight":
         case "ArrowDown":
-          changeSelection(selectionStep);
+          selectionIndexRef.current = changeSelection(
+            selectionStep,
+            copy,
+            selectionIndexRef.current,
+            selectionSize
+          );
+          pressedKeys.current.add(event.key);
+          setBlockedData(copy);
           break;
         case "ArrowLeft":
         case "ArrowUp":
-          changeSelection(-selectionStep);
+          selectionIndexRef.current = changeSelection(
+            -selectionStep,
+            copy,
+            selectionIndexRef.current,
+            selectionSize
+          );
+          pressedKeys.current.add(event.key);
+          setBlockedData(copy);
           break;
       }
     },
@@ -126,27 +76,43 @@ function ReadingPage({
     setBlockedData(copy);
   }, []);
 
+  const activationFlagRef = useRef<boolean>(false);
+  useEffect(() => {
+    // Magnetise to saved selection after start
+    if (selectionTagRef.current && !activationFlagRef.current) {
+      setMagnetizeInstanteniouslyTo(selectionTagRef.current);
+      activationFlagRef.current = true;
+    }
+  }, [selectionTagRef.current]);
+
   useEffect(() => {
     // init eventListeners
     document.addEventListener("keydown", handelKeyDown);
+
+    document.addEventListener("keyup", (event) => {
+      pressedKeys.current.delete(event.code);
+    });
     return () => {
       document.removeEventListener("keydown", handelKeyDown);
     };
   }, [handelKeyDown]);
 
   useEffect(() => {
-    // when we change selection, init machine scroll
+    // Обновить необходимое положение экрана
     if (selectionTagRef.current) {
-      selectionTagRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      const selectionPos =
+        selectionTagRef.current.offsetTop +
+        selectionTagRef.current.offsetHeight / 2;
+      setSelectionPos(selectionPos);
     }
   }, [blockedData]);
 
   return (
     <div className="ReadingPage">
-      <ScrollableText enableUserScrolling={false}>
+      <ScrollableText
+        enableUserScrolling={false}
+        selectionPos={selectionPos}
+        magnetizeInstanteniouslyTo={magnetizeInstanteniouslyTo}>
         <div className="ReadingTextElement">
           {blockedData.map((data, index) => {
             if (data.selectionPos) {
