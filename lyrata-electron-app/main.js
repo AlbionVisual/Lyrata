@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require("electron");
 const path = require("node:path");
+const fs = require("node:fs/promises");
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -13,12 +14,37 @@ const createWindow = () => {
     },
   });
 
+  Menu.setApplicationMenu(null); // Полностью убирает полосу меню сверху
+
   filePath = path.join(__dirname, "build", "index.html");
 
-  win.loadFile("build/index.html");
-
-  // win.loadURL("http://localhost:3000");
+  // win.loadFile("build/index.html"); // Для сбилженной версии
+  win.loadURL("http://localhost:3000"); // Для разработки
   win.webContents.openDevTools();
+
+  // --- Обработчик IPC для открытия файла
+  ipcMain.handle("dialog:openFile", async (event) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      properties: ["openFile"],
+      filters: [
+        { name: "Text Files", extensions: ["txt", "html", "md"] },
+        { name: "All Files", extensions: ["*"] },
+      ],
+    });
+
+    if (canceled) {
+      return null;
+    } else {
+      const filePath = filePaths[0];
+      try {
+        const fileContent = await fs.readFile(filePath, { encoding: "utf8" });
+        return fileContent;
+      } catch (error) {
+        console.error("Failed to read file:", error);
+        return null;
+      }
+    }
+  });
 };
 
 // Останавливать приложение, когда все окна закрыты

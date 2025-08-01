@@ -4,31 +4,35 @@ import { text_vanka } from "../texts/vanka";
 import parseMarkdown from "../texts/ParseMarkdown";
 import ScrollableText from "../components/ScrollableText";
 import "./ReadingPage.css";
-
 import {
   BlockedDataInterface,
   changeSelection,
 } from "../texts/ChangeSelection";
-import { validateHeaderName } from "node:http";
+import { ReadingText } from "./TextSelectionPage";
 
 interface ReadingPageProps {
   selectionSize?: number;
   selectionStep?: number;
+  currentText: ReadingText;
 }
 
 function ReadingPage({
   selectionSize = 80,
   selectionStep = 70,
+  currentText,
 }: ReadingPageProps) {
   const [blockedData, setBlockedData] = useState<BlockedDataInterface[]>(
-    parseHTML(parseMarkdown(text_vanka))
+    parseHTML(parseMarkdown(currentText.text))
   );
   const [selectionPos, setSelectionPos] = useState<number | undefined>();
   const [magnetizeInstanteniouslyTo, setMagnetizeInstanteniouslyTo] = useState<
     HTMLElement | undefined
   >();
+
   const selectionTagRef = useRef<HTMLDivElement>(null);
-  const selectionIndexRef = useRef(0);
+  const selectionIndexRef = useRef(
+    currentText.startPos ? currentText.startPos : 0
+  );
   const pressedKeys = useRef<Set<string>>(new Set<string>());
 
   const handelKeyDown = useCallback(
@@ -98,7 +102,7 @@ function ReadingPage({
   }, [handelKeyDown]);
 
   useEffect(() => {
-    // Обновить необходимое положение экрана
+    // Update current scroll position
     if (selectionTagRef.current) {
       const selectionPos =
         selectionTagRef.current.offsetTop +
@@ -106,6 +110,10 @@ function ReadingPage({
       setSelectionPos(selectionPos);
     }
   }, [blockedData]);
+
+  useEffect(() => {
+    currentText.startPos = selectionIndexRef.current;
+  }, [selectionIndexRef.current]);
 
   return (
     <div className="ReadingPage">

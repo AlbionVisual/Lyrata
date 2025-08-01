@@ -1,51 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import "./MainMenu.css";
+import Menu from "./Menu";
 
 const AvailableSelections = ["name", "read", "text", "music", "settings"];
 
 interface MainMenuProps {
-  onPageChange: (id: string) => void;
+  onPageChange: (id: string | number) => void;
+  currentTextName?: string;
 }
 
-function MainMenu({ onPageChange }: MainMenuProps) {
+function MainMenu({ onPageChange, currentTextName = "Ошибка" }: MainMenuProps) {
   const [selected, setSelected] = useState<number>(0); // name, read, text, music, settings
 
-  const handelKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      let buffSelection = selected;
-      const len = AvailableSelections.length;
-
-      switch (event.key) {
-        case "ArrowDown":
-        case "ArrowRight":
-          buffSelection =
-            buffSelection + 1 >= len ? buffSelection : buffSelection + 1;
-          event.preventDefault();
-          break;
-        case "ArrowUp":
-        case "ArrowLeft":
-          buffSelection =
-            buffSelection - 1 < 0 ? buffSelection : buffSelection - 1;
-          event.preventDefault();
-          break;
-        case "Enter":
-          if (AvailableSelections[selected] === "name") return;
-          event.preventDefault();
-          onPageChange(AvailableSelections[selected]);
-          return;
-      }
-
-      setSelected(buffSelection);
-    },
-    [selected]
-  );
-
-  useEffect(() => {
-    document.addEventListener("keydown", handelKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handelKeyDown);
-    };
-  }, [handelKeyDown]);
+  const MenuPositions = [
+    { id: 1, name: "read", text: `Читать (${currentTextName})` },
+    { id: 2, name: "text", text: "Новый текст" },
+    { id: 3, name: "music", text: "Новая музыка" },
+    { id: 4, name: "settings", text: "Настройки" },
+  ];
 
   return (
     <div className="MainMenu">
@@ -64,54 +36,11 @@ function MainMenu({ onPageChange }: MainMenuProps) {
           ней
         </div>
       </div>
-      <div
-        className={
-          AvailableSelections[selected] === "read"
-            ? "MenuListItem MenuItemSelected"
-            : "MenuListItem MenuItemDeselected"
-        }
-        onClick={() => onPageChange("read")}
-        onMouseEnter={(e) => {
-          setSelected(1);
-        }}>
-        Читать (Демо)
-      </div>
-      <div
-        className={
-          AvailableSelections[selected] === "text"
-            ? "MenuListItem MenuItemSelected"
-            : "MenuListItem MenuItemDeselected"
-        }
-        onClick={() => onPageChange("text")}
-        onMouseEnter={(e) => {
-          setSelected(2);
-        }}>
-        Новый текст
-      </div>
-      <div
-        className={
-          AvailableSelections[selected] === "music"
-            ? "MenuListItem MenuItemSelected"
-            : "MenuListItem MenuItemDeselected"
-        }
-        onClick={() => onPageChange("music")}
-        onMouseEnter={(e) => {
-          setSelected(3);
-        }}>
-        Новая музыка
-      </div>
-      <div
-        className={
-          AvailableSelections[selected] === "settings"
-            ? "MenuListItem MenuItemSelected"
-            : "MenuListItem MenuItemDeselected"
-        }
-        onClick={() => onPageChange("settings")}
-        onMouseEnter={(e) => {
-          setSelected(4);
-        }}>
-        Настройки
-      </div>
+      <Menu
+        selectedId={selected}
+        onItemActivate={onPageChange}
+        menuPositions={MenuPositions}
+        onSelectionChange={setSelected}></Menu>
     </div>
   );
 }

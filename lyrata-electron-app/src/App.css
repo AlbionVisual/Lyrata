@@ -1,3 +1,10 @@
+:root {
+    --text-font-family: "AlegreyaSans"; /* TikTokSans, AlegreyaSans */
+    --text-font-size-default: 3vh;
+    --text-side-padding: 5vw;
+    --button-text-font-size: 2.5vh;
+}
+
 p {
     text-indent: 2em;
     margin: 0px;
@@ -11,13 +18,6 @@ h5,
 h6 {
     text-indent: 2em;
     margin-bottom: 0px;
-}
-
-:root {
-    --text-font-family: "AlegreyaSans";
-    /* TikTokSans, AlegreyaSans */
-    --text-font-size-default: 3vh;
-    --text-side-padding: 5vw;
 }
 
 body {

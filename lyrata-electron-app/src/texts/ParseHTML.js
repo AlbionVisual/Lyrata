@@ -88,8 +88,6 @@ export default function parseHTML(htmlString) {
     } else return;
   });
 
-  // console.log(blockedData);
-
   return blockedData;
 }
 

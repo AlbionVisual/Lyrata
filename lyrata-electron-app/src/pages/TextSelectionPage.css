@@ -1,0 +1,38 @@
+.TextSelectionArea {
+    width: 100%;
+    overflow: hidden;
+    resize: none;
+    height: auto;
+}
+
+.TextSelectionNameInput {
+    width: 80%;
+}
+
+.SelectionTextSaveItem {
+    display: flex;
+    justify-content: space-between;
+}
+
+.TextSelectionPage {
+    max-height: 100vh;
+    overflow-y: auto;
+    padding-left: var(--text-side-padding);
+    padding-right: var(--text-side-padding);
+    width:calc(var(--text-side-padding)* -2 + 100vw);
+    &::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+        opacity: 0%;
+    }
+}
+
+.TextSelectionPage > .Menu > div {
+    transform: none;
+    max-width: calc(var(--text-side-padding)*-2+100vw);
+}
+
+.TextSelectionPageErrorMessage{
+    color:rgb(114, 0, 0)
+}
