@@ -4,6 +4,24 @@ export interface BlockedDataInterface {
   text: string;
 }
 
+function moveToWords(currentBlock: BlockedDataInterface) {
+  if (!currentBlock.selectionPos) return;
+  let [down, up] = currentBlock.selectionPos;
+  while (
+    down > 0 &&
+    ![" ", ",", ".", "!", "?"].find((el) => el === currentBlock.text[down])
+  ) {
+    down -= 1;
+  }
+  while (
+    up < currentBlock.text.length &&
+    ![" ", ",", ".", "!", "?"].find((el) => el === currentBlock.text[up])
+  ) {
+    up += 1;
+  }
+  currentBlock.selectionPos = [down, up];
+}
+
 export function changeSelection(
   amount: number,
   blockedData: BlockedDataInterface[],
@@ -18,7 +36,7 @@ export function changeSelection(
 
   if (!currentBlock.selectionPos) {
     // Если в нашем блоке ещё не установлен выделитель (либо мы только перекинулись на этот блок)
-    if (amount > 0)
+    if (amount >= 0)
       currentBlock.selectionPos = [
         0,
         blockedData[position].text.length > selectionSize
@@ -32,6 +50,7 @@ export function changeSelection(
           : blockedData[position].text.length - selectionSize,
         blockedData[position].text.length,
       ];
+    moveToWords(currentBlock);
     return position;
   }
 
@@ -68,5 +87,6 @@ export function changeSelection(
         ? currentBlock.selectionPos[0] + selectionSize
         : currentBlock.text.length;
   }
+  moveToWords(currentBlock);
   return position;
 }

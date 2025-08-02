@@ -4,6 +4,7 @@ import MainMenu from "./pages/MainMenu";
 import PageLayout from "./components/PageLayout";
 import ReadingPage from "./pages/ReadingPage";
 import TextSelectionPage, { ReadingText } from "./pages/TextSelectionPage";
+import { demoText } from "./utils/DemoText";
 
 const AvailableSelections = ["menu", "read", "text", "music", "settings"];
 
@@ -31,7 +32,12 @@ function App() {
           currentTextName={currentText?.name}></MainMenu>
       ) : AvailableSelections[currentPage] === "read" ? (
         <PageLayout onGoBack={handlePageChange}>
-          <ReadingPage currentText={currentText}></ReadingPage>
+          <ReadingPage
+            currentText={
+              currentText.text === ""
+                ? { name: currentText.name, text: demoText }
+                : currentText
+            }></ReadingPage>
         </PageLayout>
       ) : AvailableSelections[currentPage] === "text" ? (
         <PageLayout onGoBack={handlePageChange}>

@@ -68,8 +68,6 @@ function ReadingPage({
   );
 
   useEffect(() => {
-    if (currentText.text === "") currentText.text = demoText;
-
     // init first selection
     let copy: BlockedDataInterface[] = [...blockedData];
     if (!selectionIndexRef.current) selectionIndexRef.current = 0;
@@ -77,7 +75,7 @@ function ReadingPage({
       0,
       copy[selectionIndexRef.current].text.length > selectionSize
         ? selectionSize
-        : copy.length,
+        : copy[selectionIndexRef.current].text.length,
     ];
     setBlockedData(copy);
   }, []);
