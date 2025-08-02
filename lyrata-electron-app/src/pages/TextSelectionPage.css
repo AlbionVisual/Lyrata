@@ -9,7 +9,7 @@
     width: 80%;
 }
 
-.SelectionTextSaveItem {
+.FlexContainer {
     display: flex;
     justify-content: space-between;
 }

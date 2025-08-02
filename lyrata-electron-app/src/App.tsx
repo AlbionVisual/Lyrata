@@ -1,28 +1,18 @@
 import { useCallback, useState } from "react";
 import "./App.css";
 import MainMenu from "./pages/MainMenu";
-import PageLayout from "./pages/PageLayout";
+import PageLayout from "./components/PageLayout";
 import ReadingPage from "./pages/ReadingPage";
-import TextSelectionPage, {
-  ReadingText,
-  AvailableTexts,
-} from "./pages/TextSelectionPage";
-
-declare global {
-  interface Window {
-    electronAPI: {
-      openFile: () => Promise<string | null>;
-    };
-  }
-}
+import TextSelectionPage, { ReadingText } from "./pages/TextSelectionPage";
 
 const AvailableSelections = ["menu", "read", "text", "music", "settings"];
 
 function App() {
   const [currentPage, setCurrentPage] = useState<number>(0); // menu, read, text, music, settings
-  const [currentText, setCurrentText] = useState<ReadingText | undefined>(
-    AvailableTexts[0]
-  );
+  const [currentText, setCurrentText] = useState<ReadingText>({
+    text: "",
+    name: "Демо - А. П. Чехов, Ванька",
+  });
 
   const handlePageChange = useCallback((id: string | number = "menu") => {
     if (typeof id === "number") {
@@ -41,12 +31,7 @@ function App() {
           currentTextName={currentText?.name}></MainMenu>
       ) : AvailableSelections[currentPage] === "read" ? (
         <PageLayout onGoBack={handlePageChange}>
-          <ReadingPage
-            currentText={
-              currentText
-                ? currentText
-                : { name: "Ошибка", text: "Сначала выберите текст для чтения" }
-            }></ReadingPage>
+          <ReadingPage currentText={currentText}></ReadingPage>
         </PageLayout>
       ) : AvailableSelections[currentPage] === "text" ? (
         <PageLayout onGoBack={handlePageChange}>
@@ -56,15 +41,16 @@ function App() {
         </PageLayout>
       ) : AvailableSelections[currentPage] === "music" ? (
         <PageLayout onGoBack={handlePageChange}>
-          Better preferences in music?
+          Эта сложная часть приложения пока в разработке...
         </PageLayout>
       ) : AvailableSelections[currentPage] === "settings" ? (
         <PageLayout onGoBack={handlePageChange}>
-          You want some changes?!
+          Вы уже хотите изменений?! Но к сожалению настройки пока недоступны...
         </PageLayout>
       ) : (
         <PageLayout onGoBack={handlePageChange}>
-          Sth went wrong, go back
+          Ошибка... Этого не должно было произойти, но вы всё ещё можете
+          вернуться на главную страницу
         </PageLayout>
       )}
     </div>

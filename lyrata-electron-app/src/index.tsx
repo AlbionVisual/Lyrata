@@ -5,6 +5,35 @@ import "./fonts/fonts.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
+export interface settings {
+  AvailableTextsNames?: string[];
+  demoDeleted?: boolean;
+}
+
+declare global {
+  interface Window {
+    electronAPI: {
+      openFile: () => Promise<string | null>;
+    };
+    appSettingsAPI: {
+      getSettings: () => Promise<settings>;
+      updateSettings: (newSettings: settings) => { success: boolean };
+    };
+    appFileAPI: {
+      loadTextFile: (
+        fileName: string
+      ) => Promise<{ success: boolean; content?: string; error?: string }>;
+      deleteTextFile: (
+        fileName: string
+      ) => Promise<{ success: boolean; error?: string }>;
+      saveTextFile: (
+        fileName: string,
+        content: string
+      ) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+    };
+  }
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );

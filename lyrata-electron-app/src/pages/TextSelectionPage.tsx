@@ -7,8 +7,8 @@ import {
 } from "react";
 import "./TextSelectionPage.css";
 import Menu from "./Menu";
-import { text_vanka } from "../texts/vanka";
-import parseMarkdown from "../texts/ParseMarkdown";
+import { settings } from "../index";
+import { demoText } from "../utils/DemoText";
 
 export interface ReadingText {
   text: string;
@@ -21,53 +21,7 @@ interface TextSelectionPageProps {
   changeCurrentText?: (newText: ReadingText) => void;
 }
 
-export let AvailableTexts: ReadingText[] = [
-  {
-    text: parseMarkdown(text_vanka) as string,
-    name: 'Демо: А. П. Чехов\t"Ванька"',
-  },
-  {
-    name: "Буферный текст для тестов...",
-    text: `Я хочу создать свой новый текст и начать читать его.
-
-Для этого я хочу создать заголовок:
-
-<h1>Заголовок 1</h1>
-
-Разных уровней:
-
-<h2>Заголовок 2</h2>
-<h3>Заголовок 3</h3>
-<h4>Заголовок 4</h4>
-<h5>Заголовок 5</h5>
-
-Также я хочу протестировать параграфы:
-
-<p>Немного текста в параграфе</p>
-
-А ещё немного стилей:
-
-<i>Итальянский шрифт</i>
-
-<b>И жирный</b>
-
-А теперь проверим как работает md:
-
-# Заголовок 1
-## Заголовок 2
-### Заголовок 3
-#### Заголовок 4
-##### Заголовок 5
-
-А ещё форматирование:
-
-_Немного текста с нижним подчёркиванием_
-
-*Немного со звёздочками*
-
-**Немного с двойными звёздочками**`,
-  },
-];
+export let AvailableTexts: ReadingText[] = [];
 
 function TextSelectionPage({
   currentText,
@@ -79,6 +33,9 @@ function TextSelectionPage({
   const [textAreaValue, setTextAreaValue] = useState<string>("");
   const [textNameInputValue, setTextNameInputValue] = useState<string>("");
   const [currentTextId, setCurrentTextId] = useState<number>(0);
+  const [localSettings, setLocalSettings] = useState<settings>({
+    demoDeleted: true,
+  });
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const textNameInputRef = useRef<HTMLInputElement>(null);
 
@@ -133,6 +90,16 @@ function TextSelectionPage({
           setCurrentTextId(AvailableTexts.length - 1);
           if (changeCurrentText)
             changeCurrentText(AvailableTexts[AvailableTexts.length - 1]);
+          window.appFileAPI.saveTextFile(
+            textNameInputValue + ".lyrata.txt",
+            textAreaValue
+          );
+          window.appSettingsAPI.updateSettings({
+            AvailableTextsNames: (localSettings.AvailableTextsNames
+              ? localSettings.AvailableTextsNames
+              : []
+            ).concat(textNameInputValue + ".lyrata.txt"),
+          });
         }
       } else if (id > 4) {
         setCurrentTextId(id - 5);
@@ -180,7 +147,7 @@ function TextSelectionPage({
     {
       id: error ? 4 : 3,
       text: (
-        <div className="SelectionTextSaveItem">
+        <div className="FlexContainer">
           Сохранить как:
           <input
             ref={textNameInputRef}
@@ -202,7 +169,35 @@ function TextSelectionPage({
       text: <h2>Можно просто выбрать подходящий текст:</h2>,
     },
     ...AvailableTexts.map((data, index) => {
-      return { id: (error ? 6 : 5) + index, text: <>{data.name}</> };
+      return {
+        id: (error ? 6 : 5) + index,
+        text: (
+          <div className="FlexContainer">
+            {data.name}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                AvailableTexts = AvailableTexts.filter(
+                  (checkingData) => checkingData.name !== data.name
+                );
+                window.appFileAPI.deleteTextFile(data.name + ".lyrata.txt");
+                setCurrentTextId(0);
+                const newLocalSettings = {
+                  AvailableTextsNames:
+                    localSettings.AvailableTextsNames?.filter(
+                      (checkingName) =>
+                        checkingName !== data.name + ".lyrata.txt"
+                    ),
+                  demoDeleted: AvailableTexts.length !== 0 ? true : false,
+                };
+                window.appSettingsAPI.updateSettings(newLocalSettings);
+                setLocalSettings(newLocalSettings);
+              }}>
+              Удалить
+            </div>
+          </div>
+        ),
+      };
     }),
   ];
 
@@ -218,26 +213,81 @@ function TextSelectionPage({
   }, [fileContent]);
 
   useEffect(() => {
-    if (!currentText || !currentText.name) {
-      if (changeCurrentText) changeCurrentText(AvailableTexts[0]);
-      return;
+    if (currentText && currentText.text !== "") {
+      if (!currentText || !currentText.name) {
+        if (changeCurrentText) changeCurrentText(AvailableTexts[0]);
+        return;
+      }
+      if (!AvailableTexts.find((data) => data.name === currentText.name)) {
+        AvailableTexts = AvailableTexts.concat(currentText);
+        setCurrentTextId(AvailableTexts.length - 1);
+      } else {
+        setCurrentTextId(
+          AvailableTexts.findIndex((data) => data.name === currentText.name)
+        );
+      }
+      setTextNameInputValue(currentText.name);
+      setTextAreaValue(currentText.text);
     }
-    if (!AvailableTexts.find((data) => data.name === currentText.name)) {
-      AvailableTexts = AvailableTexts.concat(currentText);
-      setCurrentTextId(AvailableTexts.length - 1);
-    } else {
-      setCurrentTextId(
-        AvailableTexts.findIndex((data) => data.name === currentText.name)
-      );
-    }
-    setTextNameInputValue(currentText.name);
-    setTextAreaValue(currentText.text);
   }, [currentText]);
 
   useEffect(() => {
-    setTextNameInputValue(AvailableTexts[currentTextId].name);
-    setTextAreaValue(AvailableTexts[currentTextId].text);
+    if (AvailableTexts.length > currentTextId) {
+      setTextNameInputValue(AvailableTexts[currentTextId].name);
+      setTextAreaValue(AvailableTexts[currentTextId].text);
+    }
   }, [currentTextId]);
+
+  useEffect(() => {
+    if (localSettings.demoDeleted !== true) {
+      if (
+        !AvailableTexts.find(
+          (data) => data.name === "Демо - А. П. Чехов, Ванька"
+        )
+      ) {
+        const text = demoText;
+        const name = "Демо - А. П. Чехов, Ванька";
+        AvailableTexts = AvailableTexts.concat({
+          text: text,
+          name: name,
+        });
+        setCurrentTextId(AvailableTexts.length - 1);
+        if (changeCurrentText)
+          changeCurrentText(AvailableTexts[AvailableTexts.length - 1]);
+        window.appFileAPI.saveTextFile(name + ".lyrata.txt", text);
+        window.appSettingsAPI.updateSettings({
+          AvailableTextsNames: (localSettings.AvailableTextsNames
+            ? localSettings.AvailableTextsNames
+            : []
+          ).concat(name + ".lyrata.txt"),
+        });
+      }
+    }
+    if (localSettings.AvailableTextsNames) {
+      localSettings.AvailableTextsNames.forEach((name) => {
+        if (!AvailableTexts.find((data) => data.name === name.slice(0, -11))) {
+          window.appFileAPI
+            .loadTextFile(name)
+            .then(({ success, content, error }) => {
+              if (content)
+                AvailableTexts = AvailableTexts.concat({
+                  name: name.slice(0, -11),
+                  text: content,
+                });
+              setCurrentTextId(AvailableTexts.length - 1);
+            });
+        }
+      });
+    }
+  }, [localSettings]);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const savedSettings = await window.appSettingsAPI.getSettings();
+      setLocalSettings(savedSettings);
+    };
+    loadSettings();
+  }, []);
 
   return (
     <div className="TextSelectionPage">

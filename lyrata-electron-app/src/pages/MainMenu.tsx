@@ -14,8 +14,8 @@ function MainMenu({ onPageChange, currentTextName = "Ошибка" }: MainMenuPr
 
   const MenuPositions = [
     { id: 1, name: "read", text: `Читать (${currentTextName})` },
-    { id: 2, name: "text", text: "Новый текст" },
-    { id: 3, name: "music", text: "Новая музыка" },
+    { id: 2, name: "text", text: "Выбор текста" },
+    { id: 3, name: "music", text: "Выбор музыки" },
     { id: 4, name: "settings", text: "Настройки" },
   ];
 

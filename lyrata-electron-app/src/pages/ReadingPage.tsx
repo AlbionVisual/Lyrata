@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import parseHTML from "../texts/ParseHTML";
-import { text_vanka } from "../texts/vanka";
-import parseMarkdown from "../texts/ParseMarkdown";
+import parseHTML from "../utils/ParseHTML";
+import parseMarkdown from "../utils/ParseMarkdown";
 import ScrollableText from "../components/ScrollableText";
 import "./ReadingPage.css";
 import {
   BlockedDataInterface,
   changeSelection,
-} from "../texts/ChangeSelection";
+} from "../utils/ChangeSelection";
 import { ReadingText } from "./TextSelectionPage";
+import { demoText } from "../utils/DemoText";
 
 interface ReadingPageProps {
   selectionSize?: number;
@@ -68,6 +68,8 @@ function ReadingPage({
   );
 
   useEffect(() => {
+    if (currentText.text === "") currentText.text = demoText;
+
     // init first selection
     let copy: BlockedDataInterface[] = [...blockedData];
     if (!selectionIndexRef.current) selectionIndexRef.current = 0;
