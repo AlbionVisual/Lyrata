@@ -1,8 +1,9 @@
 {
   "name": "lyrata-electron-app",
   "version": "0.1.0",
+  "description": "Пользователь, добавив свой текст, читает только выделенную часть текста и сам переносит выделение вперёд/назад нажатиями кнопок. Музыка, также изначально выбранная и настроенная пользователем, проигрывается частями с автоматическим их выбором под настроение выделенной части текста, тем самым повторяя атмосферу книги, а не перебивая её.",
   "private": true,
-  "main": "main.js",
+  "main": "build/electron.js",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
@@ -24,7 +25,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-start": "electron .",
+    "electron-dist": "electron-builder",
+    "electron-pack": "electron-builder --dir"
   },
   "eslintConfig": {
     "extends": [
@@ -47,6 +51,39 @@
   "author": "AlbionVisual",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^37.2.4"
+    "electron": "^37.2.4",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.albionvisual.lyrata",
+    "productName": "Lyrata",
+    "copyright": "Copyright © 2025 ${author}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/electron**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "build/icons/win/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icons/mac/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icons/png"
+    }
   }
 }

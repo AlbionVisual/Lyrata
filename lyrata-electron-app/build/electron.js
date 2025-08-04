@@ -51,9 +51,9 @@ const createWindow = () => {
 
   filePath = path.join(__dirname, "build", "index.html");
 
-  // win.loadFile("build/index.html"); // Для сбилженной версии
-  win.loadURL("http://localhost:3000"); // Для разработки
-  win.webContents.openDevTools();
+  win.loadFile("build/index.html"); // Для сбилженной версии
+  // win.loadURL("http://localhost:3000"); // Для разработки
+  // win.webContents.openDevTools();
 
   // Обработчик для чтения конкретного текстового файла по запросу
   ipcMain.handle("load:text-file", async (event, fileName) => {
