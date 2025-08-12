@@ -1,34 +1,35 @@
-# React Cheetsheet
-
 ## Содержание
 
-1. [Что как делать по этапам?](#что-как-делать-по-этапам-возможно-потребует-редактирования)
+1. [Что как делать по этапам?](#что-как-делать-по-этапам)
 2. [Как выглядит отдельный компонент React-а и какова его структура и возможности](#как-в-общем-выглядит-отдельный-компонент-react-а-и-каковы-его-структура-и-возможности)
-3. [Встраивание Typescript](#встраивание-typescript)
-   1. [Настройка проекта](#1-настройка-проекта)
-   2. [Базовые типы Typescript](#2-базовые-типы-typescript)
-   3. [Типизация компонентов](#3-типизация-компонентов)
-   4. [Типизация состояния UseState-hook](#4-типизация-состояния-usestate-hook)
-   5. [Типизация обработчиков событий (Event handlers)](#5-типизация-обработчиков-событий-event-handlers)
-   6. [Типизация ссылок refs](#6-типизация-ссылок-refs)
-   7. [Распространённый типы JSX и React](#7-распространенные-типы-jsx-и-react)
-   8. [Советы и лучшие практики](#8-советы-и-лучшие-практики)
-4. [Подробное описание технологий, которые нам придётся использовать, с примерами](#подробное-описание-технологий-которые-нам-придётся-использовать-с-примерами)
-   1. [Функциональные компоненты](#функциональные-компоненты)
-   2. [JSX (JavaScript XML)](#jsx-javascript-xml)
-   3. [useState Hook](#usestate-hook)
-   4. [Conditional Rendering (Условный рендеринг)](#conditional-rendering-условный-рендеринг)
-   5. [List Rendering (Рендеринг списков)](#list-rendering-рендеринг-списков)
-   6. [useEffect Hook](#useeffect-hook)
-   7. [Event Handling (Обработка событий)](#event-handling-обработка-событий)
-   8. [HTTP-клиент (запросы на бэк)](#http-клиент-запросы-на-бэк)
+3. [Подробное описание технологий, которые нам придётся использовать, с примерами](#подробное-описание-технологий-которые-нам-придётся-использовать-с-примерами)
+	1. [Функциональные компоненты](#функциональные-компоненты)
+	2. [JSX (JavaScript XML)](#jsx-javascript-xml)
+	3. [useState Hook](#usestate-hook)
+	4. [Conditional Rendering (Условный рендеринг)](#conditional-rendering-условный-рендеринг)
+	5. [List Rendering (Рендеринг списков)](#list-rendering-рендеринг-списков)
+	6. [useEffect Hook](#useeffect-hook)
+	7. [useCallback Hook](#usecallback-hook)
+	8. [useRef Hook](#useref-hook)
+	9. [useLayoutEffect Hook](#uselayouteffect-hook)
+	10. [Event Handling (Обработка событий)](#event-handling-обработка-событий)
+	11. [HTTP-клиент (запросы на бэк)](#http-клиент-запросы-на-бэк)
+	12. [requestAnimationFrame API](#requestanimationframe-api)
+4. [Встраивание Typescript](#встраивание-typescript)
+	1. [Настройка проекта](#1-настройка-проекта)
+	2. [Базовые типы Typescript](#2-базовые-типы-typescript)
+	3. [Типизация компонентов](#3-типизация-компонентов)
+	4. [Типизация состояния UseState-hook](#4-типизация-состояния-usestate-hook)
+	5. [Типизация обработчиков событий (Event handlers)](#5-типизация-обработчиков-событий-event-handlers)
+	6. [Типизация ссылок refs](#6-типизация-ссылок-refs)
+	7. [Распространённый типы JSX и React](#7-распространенные-типы-jsx-и-react)
+	8. [Советы и лучшие практики](#8-советы-и-лучшие-практики)
 5. [React в общем](#react-в-общем)
-   1. [Как выглядит Workflow на React-е](#как-выглядит-workflow-на-react-е)
-   2. [Как программист добавляет элементы, файлы, компоненты, как кастомизирует их](#как-программист-добавляет-элементы-файлы-компоненты-как-кастомизирует-их)
-   3. [В чём преимущество React перед всеми остальными](#в-чём-преимущество-react-перед-всеми-остальными)
+	1. [Как выглядит Workflow на React-е](#как-выглядит-workflow-на-react-е)
+	2. [Как программист добавляет элементы, файлы, компоненты, как кастомизирует их](#как-программист-добавляет-элементы-файлы-компоненты-как-кастомизирует-их)
+	3. [В чём преимущество React перед всеми остальными](#в-чём-преимущество-react-перед-всеми-остальными)
 
-## Что как делать по этапам? (возможно потребует редактирования)
-
+## Что как делать по этапам?
 ### Начало
 
 1. Переходим в `frontend` папочку и запускаем сервер посредством `npm start` (после запуска должна открыться страница с нашим приложением, обычно это `http://localhost:3000/`)
@@ -163,8 +164,663 @@ function ChooseChatPage(props) {
 
 export default ChooseChatPage;
 ```
+## Как в общем выглядит отдельный компонент `React`-а и каковы его структура и возможности
 
-### Встраивание Typescript
+В современном React компоненты чаще всего пишутся как **функциональные компоненты** с использованием **хуков (Hooks)**.
+
+**Базовая структура функционального компонента:**
+
+```jsx
+// 1. Импорт необходимых библиотек/хуков
+import React, { useState, useEffect } from "react";
+import "./MyComponent.css"; // Опционально: импорт стилей
+
+// 2. Определение компонента как функции
+// Имя функции компонента всегда начинается с заглавной буквы
+function MyComponent(props) {
+  // 'props' - объект, содержащий переданные свойства
+  // 3. Использование хуков для управления состоянием и сайд-эффектами
+  const [count, setCount] = useState(0); // Пример состояния
+  const [data, setData] = useState(null); // Пример состояния для данных
+
+  useEffect(() => {
+    // Пример сайд-эффекта: выполняется после каждого рендера
+    // Можно использовать для запросов к API, подписок и т.д.
+    console.log("Компонент MyComponent был отрендерен или обновлен!");
+
+    // Пример очистки сайд-эффекта (например, отписка от событий)
+    return () => {
+      console.log("Компонент MyComponent будет размонтирован!");
+    };
+  }, []); // Пустой массив зависимостей означает, что эффект запустится только один раз при монтировании
+
+  // 4. Возврат JSX-разметки
+  // JSX должен возвращать один корневой элемент (или фрагмент <></>)
+  return (
+    <div className="my-component-container">
+      <h1>Привет, {props.name || "Мир"}!</h1>
+      <p>Текущее значение счетчика: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Увеличить счетчик</button>
+      {/* Условный рендеринг */}
+      {data ? <p>Данные загружены: {data}</p> : <p>Загрузка данных...</p>}
+      {/* Дочерние компоненты */}
+      {props.children}{" "}
+      {/* Это позволяет передавать JSX как "детей" компонента */}
+    </div>
+  );
+}
+
+// 5. Экспорт компонента для использования в других файлах
+export default MyComponent;
+```
+
+**Структура и возможности:**
+
+- **Функция:** Компонент — это обычная JavaScript-функция.
+- **Props (свойства):** Функция принимает один аргумент — объект `props`. Через него родительский компонент передает данные дочернему. Пропсы доступны только для чтения внутри компонента.
+- **JSX (JavaScript XML):** То, что возвращает функция. Это синтаксис, похожий на HTML, но позволяющий встраивать JavaScript-выражения с помощью фигурных скобок `{}`. React преобразует JSX в вызовы `React.createElement()`, которые затем создают элементы виртуального DOM.
+- **State (состояние):** Управляется с помощью хука `useState`. Позволяет компоненту хранить и обновлять внутренние данные, которые влияют на его рендеринг. Изменение состояния вызывает перерисовку компонента.
+- **Lifecycle (жизненный цикл) и Side Effects (побочные эффекты):** Управляются с помощью хука `useEffect`. Позволяет выполнять код после каждого рендеринга, при монтировании/размонтировании компонента, или при изменении определенных зависимостей. Используется для взаимодействия с внешним миром (запросы к API, манипуляции с DOM, подписки).
+- **Conditional Rendering (условный рендеринг):** Возможность отображать разные части UI в зависимости от условий (например, `if/else`, тернарный оператор, логические `&&`).
+- **List Rendering (рендеринг списков):** Использование метода `map()` для итерации по массиву данных и рендеринга списка элементов. **Важно использовать `key` пропс** для каждого элемента в списке для оптимизации React.
+- **Event Handling (обработка событий):** Прикрепление функций-обработчиков к элементам UI (например, `onClick`, `onChange`, `onSubmit`).
+
+## Подробное описание технологий, которые нам придётся использовать, с примерами
+
+### Функциональные компоненты
+
+Обычные JavaScript-функции, которые принимают `props` и возвращают JSX. Это основной способ создания компонентов в современном React.
+
+Будет использоваться нами повсеместно - это основа всего.
+
+**Props** (component properties): будет использоваться для передачи данных между компонентами:
+
+- Передача сообщения от `MessageInput` к родительскому `ChatWindow`.
+- Передача списка сообщений от `ChatWindow` к `MessageList`.
+- Передача данных о конкретном сообщении (`sender`, `content`) к компоненту `Message`.
+
+```jsx
+// src/components/Greeting.jsx
+import React from "react";
+
+// Компонент, который принимает пропс 'name'
+function Greeting(props) {
+  return <p>Привет, {props.name}!</p>;
+}
+
+export default Greeting;
+```
+
+Использование во внешнем компоненте:
+
+```jsx
+// src/App.js
+import React from "react";
+import Greeting from "./components/Greeting";
+
+import "./App.css";
+
+function App() {
+  return (
+    <div className="App">
+      <Greeting name="Разработчик" />{" "}
+      {/* Передаем значение "Разработчик" в пропс 'name'*/}
+    </div>
+  );
+}
+
+export default App;
+```
+
+### JSX (JavaScript XML)
+
+JSX позволяет писать HTML-подобную разметку прямо внутри JavaScript. React использует его для описания структуры пользовательского интерфейса.
+
+Также будет использоваться нами повсеместно - это основа всего.
+
+```jsx
+// src/components/Header.jsx
+import React from "react";
+
+function Header() {
+  const appName = "AI Chat Service"; // Можно использовать JS-переменные внутри JSX
+
+  return (
+    <header className="app-header">
+      {/* Вставляем JS-выражения в фигурных скобках {} */}
+      <h1>Добро пожаловать в {appName}!</h1>
+      <p>Ваш централизованный сервис для общения с AI.</p>
+      {/* Атрибуты HTML-тегов в JSX пишутся в camelCase (например, className вместо class) */}
+    </header>
+  );
+}
+
+export default Header;
+```
+
+### `useState` Hook
+
+Позволяет функциональным компонентам иметь "состояние" — данные, которые могут меняться со временем и вызывать перерисовку компонента.
+
+Будет использоваться нами для управления состоянием:
+
+- Текст ввода пользователя.
+- Список сообщений в текущем диалоге.
+- Список доступных диалогов.
+- Идентификатор текущего активного диалога. \* Состояние загрузки (например, при отправке сообщения или получении данных).
+
+```jsx
+// src/components/Counter.jsx
+import React, { useState } from "react";
+
+function Counter() {
+  // useState возвращает массив:
+  // 1. Текущее значение состояния (count)
+  // 2. Функция для обновления состояния (setCount)
+  const [count, setCount] = useState(0); // Инициализируем состояние 'count' значением 0
+
+  return (
+    <div>
+      <p>Счетчик: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Увеличить</button>
+      <button onClick={() => setCount(count - 1)}>Уменьшить</button>
+      <button onClick={() => setCount(0)}>Сбросить</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+### Conditional Rendering (Условный рендеринг)
+
+Отображение разных элементов или компонентов в зависимости от условия.
+
+Будет использоваться нами для:
+
+- Отображения "Загрузка..." пока данные не получены.
+- Показа разных UI-элементов в зависимости от того, выбран ли диалог или создается новый.
+- Отображения сообщений пользователя и AI по-разному.
+
+```jsx
+// src/components/AuthStatus.jsx
+import React, { useState } from "react";
+
+function AuthStatus() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  return (
+    <div>
+      {isLoggedIn ? (
+        // Если isLoggedIn true, показываем это
+        <p>Вы вошли в систему!</p>
+      ) : (
+        // Иначе показываем это
+        <p>Пожалуйста, войдите в систему.</p>
+      )}
+      <button onClick={() => setIsLoggedIn(!isLoggedIn)}>
+        {isLoggedIn ? "Выйти" : "Войти"}
+      </button>
+    </div>
+  );
+}
+
+export default AuthStatus;
+```
+
+### List Rendering (Рендеринг списков)
+
+Отображение коллекций данных (массивов) с использованием метода `map()`. **Ключевой пропс `key` обязателен!**
+
+Будет использоваться нами для:
+
+- Отображения списка диалогов в боковой панели.
+- Отображения списка сообщений в окне чата.
+
+```jsx
+// src/components/MessageList.jsx
+import React from "react";
+
+function MessageList({ messages }) {
+  // Получаем массив сообщений через пропсы
+  return (
+    <div className="message-list">
+      {messages.length === 0 ? (
+        <p>Нет сообщений в этом диалоге.</p>
+      ) : (
+        messages.map((msg) => (
+          // key должен быть уникальным для каждого элемента в списке
+          // Обычно это ID записи из базы данных
+          <div key={msg.id} className={`message ${msg.sender}`}>
+            <strong>{msg.sender === "user" ? "Вы" : "AI"}:</strong>{" "}
+            {msg.content}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+export default MessageList;
+```
+
+### `useEffect` Hook
+
+Позволяет выполнять "побочные эффекты" (side effects) в функциональных компонентах. Это могут быть запросы к API, подписки на события, прямое манипулирование DOM и т.д. `useEffect` запускается после каждого рендера, если не указаны зависимости.
+
+Будет использоваться нами для сайд-эффектов:
+
+- Выполнение HTTP-запросов к вашему Flask API при загрузке компонента (например, для получения списка диалогов или сообщений для выбранного диалога).
+- Возможно, для прокрутки чата вниз при получении нового сообщения.
+
+```jsx
+// src/components/DataLoader.jsx
+import React, { useState, useEffect } from "react";
+import axios from "axios"; // Предполагаем, что axios установлен: npm install axios
+
+function DataLoader() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Этот эффект запускается один раз после первого рендера (аналог componentDidMount)
+    // потому что массив зависимостей [] пуст.
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/conversations"
+        ); // Запрос к вашему Flask API
+        setData(response.data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Опционально: функция очистки, выполняется при размонтировании компонента (аналог componentWillUnmount)
+    return () => {
+      console.log("Компонент DataLoader размонтирован.");
+      // Здесь можно отменить подписки, очистить таймеры и т.д.
+    };
+  }, []); // Пустой массив зависимостей
+
+  if (loading) return <p>Загрузка данных...</p>;
+  if (error) return <p>Ошибка при загрузке: {error.message}</p>;
+
+  return (
+    <div>
+      <h2>Список диалогов:</h2>
+      <ul>
+        {data.map((conv) => (
+          <li key={conv.id}>
+            {conv.title} (ID: {conv.id})
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default DataLoader;
+```
+
+### `useCallback` Hook
+
+Хук `useCallback` используется для мемоизации функций, то есть для предотвращения их повторного создания при каждом рендере компонента. Это особенно полезно, когда вы передаете функции в качестве пропсов дочерним компонентам, которые оптимизированы для предотвращения ненужных перерисовок (например, с помощью `React.memo`). Если функция-пропс постоянно создается заново, дочерний компонент будет перерисовываться, даже если его внутреннее состояние и другие пропсы не изменились, так как JavaScript считает новую функцию отличной от предыдущей. `useCallback` возвращает мемоизированную версию колбэка, которая изменяется только при изменении одной из ее зависимостей.
+
+Будет использоваться нами для оптимизации производительности:
+
+- Когда вы передаете функции-обработчики событий или другие колбэки в дочерние компоненты, которые обернуты в `React.memo`, чтобы предотвратить их излишний ререндер.
+
+```jsx
+// src/components/ParentComponent.jsx
+import React, { useState, useCallback } from 'react';
+import Button from './Button'; // Предполагаем, что Button обернут в React.memo
+
+function ParentComponent() {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+
+  // Эта функция будет создаваться заново при каждом рендере ParentComponent
+  // const handleClick = () => {
+  //   setCount(prevCount => prevCount + 1);
+  // };
+
+  // Эта функция будет мемоизирована и изменится только если count изменится
+  const memoizedHandleClick = useCallback(() => {
+    setCount(prevCount => prevCount + 1);
+  }, []); // Пустой массив зависимостей означает, что функция создается один раз
+
+  // Эта функция будет мемоизирована и изменится только если text изменится
+  const memoizedHandleChange = useCallback((event) => {
+    setText(event.target.value);
+  }, []); // Зависимость: [text]
+
+  return (
+    <div>
+      <p>Счетчик: {count}</p>
+      {/* Передаем мемоизированную функцию, чтобы Button не перерисовывался без нужды */}
+      <Button onClick={memoizedHandleClick}>Увеличить счетчик</Button>
+
+      <input type="text" value={text} onChange={memoizedHandleChange} placeholder="Введите текст" />
+      <p>Введенный текст: {text}</p>
+    </div>
+  );
+}
+
+export default ParentComponent;
+
+// src/components/Button.jsx
+import React from 'react';
+
+// Оборачиваем компонент в React.memo для оптимизации
+const Button = React.memo(({ onClick, children }) => {
+  console.log('Button рендерится'); // Помогает увидеть, когда компонент перерисовывается
+  return (
+    <button onClick={onClick}>
+      {children}
+    </button>
+  );
+});
+
+export default Button;
+```
+
+### `useRef` Hook
+
+Хук `useRef` предоставляет способ создавать изменяемые ссылки, которые не вызывают повторный рендеринг компонента при их изменении. Он имеет два основных применения. Во-первых, это прямой доступ к DOM-элементам, что бывает необходимо для фокусировки элементов, управления медиа-проигрывателями, интеграции со сторонними DOM-библиотеками или выполнения анимаций. Во-вторых, `useRef` может использоваться для хранения любого изменяемого значения, которое должно сохраняться между рендерами компонента, но при этом не должно вызывать его перерисовку (в отличие от `useState`). Например, это может быть таймер, ID интервала, или любое другое значение, которое не влияет на визуальное представление компонента, но необходимо для его внутренней логики.
+
+Будет использоваться нами для:
+
+- Прямого взаимодействия с DOM-элементами, например, для автоматической прокрутки чата к последнему сообщению.
+- Хранения значений, которые должны сохраняться между рендерами, но не должны вызывать их.
+
+```jsx
+// src/components/ChatScroll.jsx
+import React, { useRef, useEffect, useState } from 'react';
+
+function ChatScroll() {
+  const [messages, setMessages] = useState([
+    "Привет!",
+    "Как дела?",
+    "Отлично, а у тебя?",
+    "Тоже хорошо!",
+  ]);
+  // Создаем ref для ссылки на DOM-элемент, к которому хотим прокрутить
+  const messagesEndRef = useRef(null);
+
+  // Добавляем новое сообщение каждые 2 секунды для демонстрации
+  useEffect(() => {
+    let messageCount = messages.length;
+    const intervalId = setInterval(() => {
+      messageCount++;
+      setMessages(prevMessages => [...prevMessages, `Новое сообщение ${messageCount}`]);
+    }, 2000);
+
+    return () => clearInterval(intervalId); // Очистка интервала при размонтировании
+  }, []);
+
+  // Эффект для прокрутки к последнему сообщению при каждом обновлении сообщений
+  useEffect(() => {
+    // Проверяем, что ref.current существует, прежде чем использовать его
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]); // Зависимость: [messages] - эффект запустится при изменении массива сообщений
+
+  // Пример использования useRef для хранения изменяемого значения, не вызывающего ререндер
+  const renderCount = useRef(0);
+  renderCount.current = renderCount.current + 1; // Увеличиваем счетчик рендеров
+
+  return (
+    <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
+      <h3>Чат (рендер: {renderCount.current})</h3>
+      {messages.map((msg, index) => (
+        <p key={index} style={{ marginBottom: '5px' }}>{msg}</p>
+      ))}
+      {/* Пустой div, к которому будем прокручивать */}
+      <div ref={messagesEndRef} />
+    </div>
+  );
+}
+
+export default ChatScroll;
+```
+
+### `useLayoutEffect` Hook
+
+Хук `useLayoutEffect` очень похож на `useEffect`, но с одним критическим отличием: он запускается синхронно сразу после всех изменений DOM, но до того, как браузер успеет выполнить отрисовку (repaint). Это означает, что любые измерения или манипуляции с DOM, выполненные внутри `useLayoutEffect`, будут видны пользователю уже в следующем кадре, без "мерцания" или нежелательных промежуточных состояний. В отличие от `useEffect`, который запускается асинхронно после отрисовки, `useLayoutEffect` блокирует отрисовку браузера. Из-за этого блокирующего поведения его следует использовать только тогда, когда это абсолютно необходимо, например, для определения размеров элемента после его рендеринга и немедленного изменения его стиля на основе этих измерений. В большинстве случаев `useEffect` является предпочтительным выбором.
+
+Будет использоваться нами в очень редких случаях:
+
+- Когда необходимо выполнить измерения DOM-элементов или изменить их стили _до_ того, как браузер их отрисует, чтобы избежать визуальных артефактов.
+
+```jsx
+// src/components/Tooltip.jsx
+import React, { useState, useRef, useLayoutEffect } from 'react';
+
+function Tooltip({ children, text }) {
+  const [tooltipStyle, setTooltipStyle] = useState({});
+  const tooltipRef = useRef(null); // Ссылка на элемент всплывающей подсказки
+  const targetRef = useRef(null); // Ссылка на элемент, к которому привязана подсказка
+
+  // useLayoutEffect для измерения и позиционирования тултипа до отрисовки
+  useLayoutEffect(() => {
+    if (tooltipRef.current && targetRef.current) {
+      const targetRect = targetRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+
+      // Пример позиционирования тултипа над элементом
+      setTooltipStyle({
+        position: 'absolute',
+        top: targetRect.top - tooltipRect.height - 10, // 10px отступ сверху
+        left: targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2),
+      });
+    }
+  }, [children, text]); // Зависимости: если изменится содержимое, пересчитываем позицию
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Элемент, к которому привязан тултип */}
+      <span ref={targetRef}>
+        {children}
+      </span>
+      {/* Сам тултип */}
+      <div ref={tooltipRef} style={{ ...tooltipStyle, background: 'black', color: 'white', padding: '5px', borderRadius: '3px', whiteSpace: 'nowrap' }}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
+// Использование:
+// <Tooltip text="Это подсказка!">
+//   <button>Наведи на меня</button>
+// </Tooltip>
+```
+
+### Event Handling (Обработка событий)
+
+Реагирование на действия пользователя, такие как клики, ввод текста и т.д.
+
+Будет использоваться нами так:
+
+- `onChange` для поля ввода сообщения.
+- `onClick` для кнопки "Отправить" или выбора диалога.
+- `onKeyPress` для отправки сообщения по Enter.
+
+```jsx
+// src/components/MessageInput.jsx
+import React, { useState } from "react";
+
+function MessageInput({ onSendMessage }) {
+  // onSendMessage - функция, переданная из родителя
+  const [messageText, setMessageText] = useState("");
+
+  const handleChange = (event) => {
+    setMessageText(event.target.value);
+  };
+
+  const handleSubmit = () => {
+    if (messageText.trim()) {
+      // Проверяем, что сообщение не пустое
+      onSendMessage(messageText); // Вызываем функцию из родителя
+      setMessageText(""); // Очищаем поле ввода
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
+
+  return (
+    <div className="message-input">
+      <input
+        type="text"
+        value={messageText}
+        onChange={handleChange}
+        onKeyPress={handleKeyPress}
+        placeholder="Введите ваше сообщение..."
+      />
+      <button onClick={handleSubmit}>Отправить</button>
+    </div>
+  );
+}
+
+export default MessageInput;
+```
+
+### HTTP-клиент (запросы на бэк)
+
+Хотя React сам по себе не предоставляет встроенных средств для HTTP-запросов, вы будете активно использовать `fetch` API браузера для взаимодействия с вашим Flask API.
+
+```jsx
+// src/components/ChatWindow.jsx
+import React, { useState, useEffect } from "react";
+
+function ChatWindow({ currentConversationId }) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Если нет выбранного диалога, очищаем сообщения
+    if (!currentConversationId) {
+      setMessages([]);
+      return;
+    }
+
+    const fetchMessages = async () => {
+      setLoading(true);
+      setError(null); // Сбрасываем ошибку
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/conversations/${currentConversationId}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch messages: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setMessages(data);
+      } catch (err) {
+        console.error("Ошибка загрузки сообщений:", err);
+        setError(err);
+        setMessages([]); // Очищаем сообщения при ошибке
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [currentConversationId]); // Зависимость: эффект запустится при изменении currentConversationId
+
+  if (loading) return <p>Загрузка сообщений...</p>;
+  if (error) return <p>Ошибка: {error.message}</p>;
+  if (messages.length === 0)
+    return <p>Начните новый диалог или выберите существующий.</p>;
+
+  return (
+    <div className="chat-messages">
+      {messages.map((msg, index) => (
+        <div key={index} className={`message ${msg.sender}`}>
+          <p>
+            <strong>{msg.sender === "user" ? "Вы" : "AI"}:</strong>{" "}
+            {msg.content}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default ChatWindow;
+```
+
+### `requestAnimationFrame` API
+
+`requestAnimationFrame` (rAF) — это функция, предоставляемая браузером, которая позволяет планировать выполнение функции непосредственно перед следующей перерисовкой браузера. Это идеальный способ для выполнения анимаций, так как он гарантирует, что ваши обновления DOM будут синхронизированы с частотой обновления экрана монитора (обычно 60 кадров в секунду), что приводит к более плавным и эффективным анимациям без "рывков". В отличие от `setTimeout` или `setInterval`, `requestAnimationFrame` автоматически приостанавливает выполнение, когда вкладка неактивна, экономя ресурсы процессора и батареи. Он возвращает ID запроса, который можно использовать для отмены запланированной анимации с помощью `cancelAnimationFrame`.
+
+Будет использоваться нами для:
+
+- Создания плавных анимаций, особенно тех, которые затрагивают изменение стилей или положения DOM-элементов.
+- Оптимизации визуальных обновлений, чтобы они соответствовали частоте кадров браузера.
+
+```jsx
+// src/components/AnimatedBox.jsx
+import React, { useState, useEffect, useRef } from 'react';
+
+function AnimatedBox() {
+  const [x, setX] = useState(0);
+  const animationFrameId = useRef(null); // Для хранения ID requestAnimationFrame
+
+  const animate = () => {
+    setX(prevX => {
+      const newX = prevX + 2; // Перемещаем на 2 пикселя
+      if (newX > window.innerWidth - 50) { // Если достигли края экрана (50px - ширина квадрата)
+        return 0; // Начинаем сначала
+      }
+      return newX;
+    });
+    // Планируем следующий кадр анимации
+    animationFrameId.current = requestAnimationFrame(animate);
+  };
+
+  useEffect(() => {
+    // Запускаем анимацию при монтировании компонента
+    animationFrameId.current = requestAnimationFrame(animate);
+
+    // Функция очистки: отменяем анимацию при размонтировании компонента
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, []); // Пустой массив зависимостей: эффект запускается один раз
+
+  return (
+    <div style={{
+      width: '50px',
+      height: '50px',
+      backgroundColor: 'blue',
+      position: 'relative',
+      left: x,
+      top: '50px',
+      transition: 'none' // Отключаем CSS-переходы для плавности через rAF
+    }}></div>
+  );
+}
+
+export default AnimatedBox;
+```
+## Встраивание Typescript
 
 TypeScript (TS) в комбинации с React значительно улучшает процесс разработки, делая код более надежным, читаемым и удобным в поддержке. Он добавляет статическую типизацию в JavaScript, что позволяет обнаруживать ошибки на этапе компиляции, а не в рантайме.
 
@@ -486,432 +1142,6 @@ const ClickCounter = () => {
 - **Используйте `interface` или `type` для пропсов и состояния:** Всегда явно определяйте типы для пропсов и состояния ваших компонентов.
 - **Generics (Обобщения):** Используйте обобщения для создания переиспользуемых компонентов или хуков, которые могут работать с разными типами данных, сохраняя при этом типобезопасность.
 - **Осторожное использование утверждений типа (`as`):** Используйте `as` (type assertion) только тогда, когда вы абсолютно уверены в типе переменной, и TypeScript не может вывести его самостоятельно. Чрезмерное использование `as` может скрыть реальные ошибки.
-
-## Как в общем выглядит отдельный компонент `React`-а и каковы его структура и возможности
-
-В современном React компоненты чаще всего пишутся как **функциональные компоненты** с использованием **хуков (Hooks)**.
-
-**Базовая структура функционального компонента:**
-
-```jsx
-// 1. Импорт необходимых библиотек/хуков
-import React, { useState, useEffect } from "react";
-import "./MyComponent.css"; // Опционально: импорт стилей
-
-// 2. Определение компонента как функции
-// Имя функции компонента всегда начинается с заглавной буквы
-function MyComponent(props) {
-  // 'props' - объект, содержащий переданные свойства
-  // 3. Использование хуков для управления состоянием и сайд-эффектами
-  const [count, setCount] = useState(0); // Пример состояния
-  const [data, setData] = useState(null); // Пример состояния для данных
-
-  useEffect(() => {
-    // Пример сайд-эффекта: выполняется после каждого рендера
-    // Можно использовать для запросов к API, подписок и т.д.
-    console.log("Компонент MyComponent был отрендерен или обновлен!");
-
-    // Пример очистки сайд-эффекта (например, отписка от событий)
-    return () => {
-      console.log("Компонент MyComponent будет размонтирован!");
-    };
-  }, []); // Пустой массив зависимостей означает, что эффект запустится только один раз при монтировании
-
-  // 4. Возврат JSX-разметки
-  // JSX должен возвращать один корневой элемент (или фрагмент <></>)
-  return (
-    <div className="my-component-container">
-      <h1>Привет, {props.name || "Мир"}!</h1>
-      <p>Текущее значение счетчика: {count}</p>
-      <button onClick={() => setCount(count + 1)}>Увеличить счетчик</button>
-      {/* Условный рендеринг */}
-      {data ? <p>Данные загружены: {data}</p> : <p>Загрузка данных...</p>}
-      {/* Дочерние компоненты */}
-      {props.children}{" "}
-      {/* Это позволяет передавать JSX как "детей" компонента */}
-    </div>
-  );
-}
-
-// 5. Экспорт компонента для использования в других файлах
-export default MyComponent;
-```
-
-**Структура и возможности:**
-
-- **Функция:** Компонент — это обычная JavaScript-функция.
-- **Props (свойства):** Функция принимает один аргумент — объект `props`. Через него родительский компонент передает данные дочернему. Пропсы доступны только для чтения внутри компонента.
-- **JSX (JavaScript XML):** То, что возвращает функция. Это синтаксис, похожий на HTML, но позволяющий встраивать JavaScript-выражения с помощью фигурных скобок `{}`. React преобразует JSX в вызовы `React.createElement()`, которые затем создают элементы виртуального DOM.
-- **State (состояние):** Управляется с помощью хука `useState`. Позволяет компоненту хранить и обновлять внутренние данные, которые влияют на его рендеринг. Изменение состояния вызывает перерисовку компонента.
-- **Lifecycle (жизненный цикл) и Side Effects (побочные эффекты):** Управляются с помощью хука `useEffect`. Позволяет выполнять код после каждого рендеринга, при монтировании/размонтировании компонента, или при изменении определенных зависимостей. Используется для взаимодействия с внешним миром (запросы к API, манипуляции с DOM, подписки).
-- **Conditional Rendering (условный рендеринг):** Возможность отображать разные части UI в зависимости от условий (например, `if/else`, тернарный оператор, логические `&&`).
-- **List Rendering (рендеринг списков):** Использование метода `map()` для итерации по массиву данных и рендеринга списка элементов. **Важно использовать `key` пропс** для каждого элемента в списке для оптимизации React.
-- **Event Handling (обработка событий):** Прикрепление функций-обработчиков к элементам UI (например, `onClick`, `onChange`, `onSubmit`).
-
-## Подробное описание технологий, которые нам придётся использовать, с примерами
-
-### Функциональные компоненты
-
-Обычные JavaScript-функции, которые принимают `props` и возвращают JSX. Это основной способ создания компонентов в современном React.
-
-Будет использоваться нами повсеместно - это основа всего.
-
-**Props** (component properties): будет использоваться для передачи данных между компонентами:
-
-- Передача сообщения от `MessageInput` к родительскому `ChatWindow`.
-- Передача списка сообщений от `ChatWindow` к `MessageList`.
-- Передача данных о конкретном сообщении (`sender`, `content`) к компоненту `Message`.
-
-```jsx
-// src/components/Greeting.jsx
-import React from "react";
-
-// Компонент, который принимает пропс 'name'
-function Greeting(props) {
-  return <p>Привет, {props.name}!</p>;
-}
-
-export default Greeting;
-```
-
-Использование во внешнем компоненте:
-
-```jsx
-// src/App.js
-import React from "react";
-import Greeting from "./components/Greeting";
-
-import "./App.css";
-
-function App() {
-  return (
-    <div className="App">
-      <Greeting name="Разработчик" />{" "}
-      {/* Передаем значение "Разработчик" в пропс 'name'*/}
-    </div>
-  );
-}
-
-export default App;
-```
-
-### JSX (JavaScript XML)
-
-JSX позволяет писать HTML-подобную разметку прямо внутри JavaScript. React использует его для описания структуры пользовательского интерфейса.
-
-Также будет использоваться нами повсеместно - это основа всего.
-
-```jsx
-// src/components/Header.jsx
-import React from "react";
-
-function Header() {
-  const appName = "AI Chat Service"; // Можно использовать JS-переменные внутри JSX
-
-  return (
-    <header className="app-header">
-      {/* Вставляем JS-выражения в фигурных скобках {} */}
-      <h1>Добро пожаловать в {appName}!</h1>
-      <p>Ваш централизованный сервис для общения с AI.</p>
-      {/* Атрибуты HTML-тегов в JSX пишутся в camelCase (например, className вместо class) */}
-    </header>
-  );
-}
-
-export default Header;
-```
-
-### `useState` Hook
-
-Позволяет функциональным компонентам иметь "состояние" — данные, которые могут меняться со временем и вызывать перерисовку компонента.
-
-Будет использоваться нами для управления состоянием:
-
-- Текст ввода пользователя.
-- Список сообщений в текущем диалоге.
-- Список доступных диалогов.
-- Идентификатор текущего активного диалога. \* Состояние загрузки (например, при отправке сообщения или получении данных).
-
-```jsx
-// src/components/Counter.jsx
-import React, { useState } from "react";
-
-function Counter() {
-  // useState возвращает массив:
-  // 1. Текущее значение состояния (count)
-  // 2. Функция для обновления состояния (setCount)
-  const [count, setCount] = useState(0); // Инициализируем состояние 'count' значением 0
-
-  return (
-    <div>
-      <p>Счетчик: {count}</p>
-      <button onClick={() => setCount(count + 1)}>Увеличить</button>
-      <button onClick={() => setCount(count - 1)}>Уменьшить</button>
-      <button onClick={() => setCount(0)}>Сбросить</button>
-    </div>
-  );
-}
-
-export default Counter;
-```
-
-### Conditional Rendering (Условный рендеринг)
-
-Отображение разных элементов или компонентов в зависимости от условия.
-
-Будет использоваться нами для:
-
-- Отображения "Загрузка..." пока данные не получены.
-- Показа разных UI-элементов в зависимости от того, выбран ли диалог или создается новый.
-- Отображения сообщений пользователя и AI по-разному.
-
-```jsx
-// src/components/AuthStatus.jsx
-import React, { useState } from "react";
-
-function AuthStatus() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  return (
-    <div>
-      {isLoggedIn ? (
-        // Если isLoggedIn true, показываем это
-        <p>Вы вошли в систему!</p>
-      ) : (
-        // Иначе показываем это
-        <p>Пожалуйста, войдите в систему.</p>
-      )}
-      <button onClick={() => setIsLoggedIn(!isLoggedIn)}>
-        {isLoggedIn ? "Выйти" : "Войти"}
-      </button>
-    </div>
-  );
-}
-
-export default AuthStatus;
-```
-
-### List Rendering (Рендеринг списков)
-
-Отображение коллекций данных (массивов) с использованием метода `map()`. **Ключевой пропс `key` обязателен!**
-
-Будет использоваться нами для:
-
-- Отображения списка диалогов в боковой панели.
-- Отображения списка сообщений в окне чата.
-
-```jsx
-// src/components/MessageList.jsx
-import React from "react";
-
-function MessageList({ messages }) {
-  // Получаем массив сообщений через пропсы
-  return (
-    <div className="message-list">
-      {messages.length === 0 ? (
-        <p>Нет сообщений в этом диалоге.</p>
-      ) : (
-        messages.map((msg) => (
-          // key должен быть уникальным для каждого элемента в списке
-          // Обычно это ID записи из базы данных
-          <div key={msg.id} className={`message ${msg.sender}`}>
-            <strong>{msg.sender === "user" ? "Вы" : "AI"}:</strong>{" "}
-            {msg.content}
-          </div>
-        ))
-      )}
-    </div>
-  );
-}
-
-export default MessageList;
-```
-
-### `useEffect` Hook
-
-Позволяет выполнять "побочные эффекты" (side effects) в функциональных компонентах. Это могут быть запросы к API, подписки на события, прямое манипулирование DOM и т.д. `useEffect` запускается после каждого рендера, если не указаны зависимости.
-
-Будет использоваться нами для сайд-эффектов:
-
-- Выполнение HTTP-запросов к вашему Flask API при загрузке компонента (например, для получения списка диалогов или сообщений для выбранного диалога).
-- Возможно, для прокрутки чата вниз при получении нового сообщения.
-
-```jsx
-// src/components/DataLoader.jsx
-import React, { useState, useEffect } from "react";
-import axios from "axios"; // Предполагаем, что axios установлен: npm install axios
-
-function DataLoader() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Этот эффект запускается один раз после первого рендера (аналог componentDidMount)
-    // потому что массив зависимостей [] пуст.
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/conversations"
-        ); // Запрос к вашему Flask API
-        setData(response.data);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    // Опционально: функция очистки, выполняется при размонтировании компонента (аналог componentWillUnmount)
-    return () => {
-      console.log("Компонент DataLoader размонтирован.");
-      // Здесь можно отменить подписки, очистить таймеры и т.д.
-    };
-  }, []); // Пустой массив зависимостей
-
-  if (loading) return <p>Загрузка данных...</p>;
-  if (error) return <p>Ошибка при загрузке: {error.message}</p>;
-
-  return (
-    <div>
-      <h2>Список диалогов:</h2>
-      <ul>
-        {data.map((conv) => (
-          <li key={conv.id}>
-            {conv.title} (ID: {conv.id})
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default DataLoader;
-```
-
-### Event Handling (Обработка событий)
-
-Реагирование на действия пользователя, такие как клики, ввод текста и т.д.
-
-Будет использоваться нами так:
-
-- `onChange` для поля ввода сообщения.
-- `onClick` для кнопки "Отправить" или выбора диалога.
-- `onKeyPress` для отправки сообщения по Enter.
-
-```jsx
-// src/components/MessageInput.jsx
-import React, { useState } from "react";
-
-function MessageInput({ onSendMessage }) {
-  // onSendMessage - функция, переданная из родителя
-  const [messageText, setMessageText] = useState("");
-
-  const handleChange = (event) => {
-    setMessageText(event.target.value);
-  };
-
-  const handleSubmit = () => {
-    if (messageText.trim()) {
-      // Проверяем, что сообщение не пустое
-      onSendMessage(messageText); // Вызываем функцию из родителя
-      setMessageText(""); // Очищаем поле ввода
-    }
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleSubmit();
-    }
-  };
-
-  return (
-    <div className="message-input">
-      <input
-        type="text"
-        value={messageText}
-        onChange={handleChange}
-        onKeyPress={handleKeyPress}
-        placeholder="Введите ваше сообщение..."
-      />
-      <button onClick={handleSubmit}>Отправить</button>
-    </div>
-  );
-}
-
-export default MessageInput;
-```
-
-### HTTP-клиент (запросы на бэк)
-
-Хотя React сам по себе не предоставляет встроенных средств для HTTP-запросов, вы будете активно использовать `fetch` API браузера для взаимодействия с вашим Flask API.
-
-```jsx
-// src/components/ChatWindow.jsx
-import React, { useState, useEffect } from "react";
-
-function ChatWindow({ currentConversationId }) {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Если нет выбранного диалога, очищаем сообщения
-    if (!currentConversationId) {
-      setMessages([]);
-      return;
-    }
-
-    const fetchMessages = async () => {
-      setLoading(true);
-      setError(null); // Сбрасываем ошибку
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/conversations/${currentConversationId}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch messages: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setMessages(data);
-      } catch (err) {
-        console.error("Ошибка загрузки сообщений:", err);
-        setError(err);
-        setMessages([]); // Очищаем сообщения при ошибке
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
-  }, [currentConversationId]); // Зависимость: эффект запустится при изменении currentConversationId
-
-  if (loading) return <p>Загрузка сообщений...</p>;
-  if (error) return <p>Ошибка: {error.message}</p>;
-  if (messages.length === 0)
-    return <p>Начните новый диалог или выберите существующий.</p>;
-
-  return (
-    <div className="chat-messages">
-      {messages.map((msg, index) => (
-        <div key={index} className={`message ${msg.sender}`}>
-          <p>
-            <strong>{msg.sender === "user" ? "Вы" : "AI"}:</strong>{" "}
-            {msg.content}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default ChatWindow;
-```
-
 ## React в общем
 
 ### Как выглядит Workflow на React-е

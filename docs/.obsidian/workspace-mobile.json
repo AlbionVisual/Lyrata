@@ -36,9 +36,24 @@
               "icon": "lucide-file",
               "title": "Демо-рассказ"
             }
+          },
+          {
+            "id": "60d94c80956571eb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Демо-рассказ.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "Демо-рассказ"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -92,10 +107,11 @@
       "random-note:Open random note": false
     }
   },
-  "active": "25b4aafcc7de7db3",
+  "active": "9e821133d09225ff",
   "lastOpenFiles": [
-    "Пользовательский интерфейс.md",
+    "Untitled.md",
     "Демо-рассказ.md",
+    "Пользовательский интерфейс.md",
     "Части приложения.md",
     "Инструменты классификации внутри lybrosa.md",
     "Функционал приложения.md",

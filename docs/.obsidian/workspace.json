@@ -4,22 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "98716671a3a46571",
+        "id": "8ed0455a73bf446f",
         "type": "tabs",
         "children": [
           {
-            "id": "144ba74eb0369c1b",
+            "id": "4fb4d64f3de0e3c9",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Демо-рассказ.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Демо-рассказ"
+              "title": "New tab"
             }
           }
         ]
@@ -81,17 +76,28 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "canvas:Create new canvas": false,
       "command-palette:Open command palette": false,
       "random-note:Open random note": false
     }
   },
-  "active": "144ba74eb0369c1b",
+  "active": "4fb4d64f3de0e3c9",
   "lastOpenFiles": [
-    "Chapter 1 - Rainbow Alicon - Fall.md",
+    "Шпоргалка по SQLite и python sqlite3.md",
+    "Шпоргалка по React.md",
+    "Шпоргалка по Flask и её связи с React.md",
+    "Шпоргалка по командам python, git и npm.md",
+    "Untitled.md",
+    "Шпоргалка по Python venv.md",
     "Части приложения.md",
-    "Части приложения.md",
-    "~syncthing~Части приложения.sync-conflict-20250725-063047-C4Z6EET.md.tmp",
     "Функционал приложения.md",
-    "Решаемая проблема.md"
+    "Решаемая проблема.md",
+    "Краткое overview.md",
+    "Разговор с ИИ.md",
+    "Пользовательский интерфейс.md",
+    "Инструменты классификации внутри lybrosa.md",
+    "Демо-рассказ.md",
+    "Chapter 1 - Rainbow Alicon - Fall.md",
+    "~syncthing~Части приложения.sync-conflict-20250725-063047-C4Z6EET.md.tmp"
   ]
 }
