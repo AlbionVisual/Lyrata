@@ -16,7 +16,7 @@ def max_dict(d):
     return ans, m
 
 
-extracted_sentences = parse_markdown_to_sentences_simple("big_text.md")
+extracted_sentences, _ = parse_markdown_to_sentences_simple("F:/Projects/Lyrata/lyrata-python-app/big_text.md")
 
 sum_time = 0
 

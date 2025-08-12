@@ -2,7 +2,6 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # 1. Загрузка токенизатора и модели один раз при старте приложения
-# Это важно, чтобы не загружать их при каждом запросе, что очень неэффективно.
 try:
     tokenizer = AutoTokenizer.from_pretrained("Kostya165/rubert_emotion_slicer")
     model = AutoModelForSequenceClassification.from_pretrained("Kostya165/rubert_emotion_slicer")
@@ -12,12 +11,12 @@ try:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.eval() # Перевести модель в режим оценки (отключает dropout и т.д.)
-    print(f"Модель загружена на: {device}")
+    # print(f"Модель загружена на: {device}")
 except Exception as e:
-    print(f"Ошибка при загрузке модели: {e}")
+    print(f"Ошибка при загрузке RuBert модели: {e}")
     # Обработка ошибки, например, завершение работы приложения или переход в режим "недоступно"
 
-def classify_text_backend(texts: list[str]) -> list[dict]:
+def classify_text(texts: list[str]) -> list[dict]:
     """
     Классифицирует список текстовых строк с использованием загруженной модели.
 
@@ -25,7 +24,7 @@ def classify_text_backend(texts: list[str]) -> list[dict]:
         texts: Список строк для классификации.
 
     Returns:
-
+        Список числовых результатов последнего слоя округлённых до 1e-4
     """
     if not texts:
         return []
@@ -81,6 +80,6 @@ if __name__ == "__main__":
         'Какой ужасный день, все идет не так'
     ]
 
-    results = classify_text_backend(test_strings)
+    results = classify_text(test_strings)
     for text, result in zip(test_strings, results):
         print(f"Текст: '{text}' -> Предсказание: {result}")

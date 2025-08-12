@@ -1,0 +1,43 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "attrs": {
+        "alignment": "left"
+      },
+      "data": {
+        "moods": [
+            {
+                "type": "neutral",
+                "indexes": [0,17]
+            },
+            {
+                "type": "agressive",
+                "indexes": [18, 36]
+            }
+        ],
+        "global_offsets": [0,37]
+      },
+      "content": [
+        {"type": "text", "text": "Это обычный текст. "},
+        {"type": "text", "text": "Это, ", "marks": []},
+        {"type": "text", "text": "жирный", "marks": [{"type": "bold"}]},
+        {"type": "text", "text": " текст. "}
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {"level": 2},
+      "content": [
+        {"type": "text", "text": "Подзаголовок"}
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {"type": "paragraph", "content": [{"type": "text", "text": "Цитата из книги."}]}
+      ]
+    }
+  ]
+}

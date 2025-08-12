@@ -67,12 +67,12 @@ README.md
 ## Технологии
 
 - Python 3.10+
+  - Librosa
+  - Transformers
+  - Torch
+  - Numpy
 - React
-- Electron
-- Librosa
-- Transformers
-- Torch
-- Numpy
+  - Electron
 
 ## Lyrata
 
