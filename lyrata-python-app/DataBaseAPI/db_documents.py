@@ -51,10 +51,17 @@ class db_documents(db_file):
 
         `name` - имя нового документа\n
         `author` - автор нового документа (по умолчанию 'Lyrata')
+
+        Returns:
+                `id` - идентификатор вновь добавленного блока
         """
         time = str(datetime.now())
+        res = -1
         with self as cursor:
             cursor.execute("INSERT INTO documents ('name', 'author', 'created_at', 'updated_at') VALUES (?, ?, ?, ?)", (name, author, time, time))
+            cursor.execute("SELECT id FROM documents WHERE created_at = ? AND name = ?", (time,name))
+            res = cursor.fetchone()[0]
+        return res
 
     def delete_document(self, id: int):
         """

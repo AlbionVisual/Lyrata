@@ -56,12 +56,12 @@ class db_api(db_document_with_change_methods):
 
     def get_sorted_document(self, id: int, amount:int = None, offset:int = None):
         """
-        Получает все блоки данного документа в правильном порядке благодаря sql-запросу 
+        Получает все блоки данного документа в правильном порядке благодаря sql-запросу
 
         `id` - уникальный идентификатор документа
 
         Returns:
-                `block_array` - список блоков приписанных к этому документу в полностью отсортированном при помощи sql-запроса порядке
+                `block_array` - список блоков приписанных к этому документу в полностью отсортированном при помощи sql-запроса порядке. Один блок - кортеж вида: (id, document_id, parent_id, order_in_parent, type, attrs_json, data_json, content_json, depth)
         """
         if type(id) is not int: raise TypeError("db_ast->get_sorted_document: You must provide integer value")
         res = None
@@ -74,6 +74,20 @@ class db_api(db_document_with_change_methods):
                 cursor.execute(sql_commands.hierarchichal_sort, (id,id))
             res = cursor.fetchall()
         return res
+
+def get_text(document: list[tuple])->str:
+    """
+    Из отсортированного списка блоков получает текст, объединяя все блоки с типом text
+
+    `document` - правильно отсортированный список блоков
+
+    Returns:
+            `text` - результирующая строка
+    """
+    text = ''
+    for el in document:
+        if el[4] == 'text': text += el[7]
+    return text
 
 if __name__ == "__main__":
     from pprint import pprint as print

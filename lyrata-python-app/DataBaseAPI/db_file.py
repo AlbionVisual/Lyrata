@@ -15,6 +15,7 @@ class db_file:
         if path.basename(db_path)[-3:] != ".db":
             db_path = path.join(path.dirname(db_path), "database.db")
         self.path = db_path
+        self.deepness = 0
         
     def __enter__(self):
         """
@@ -23,6 +24,9 @@ class db_file:
         Returns:
                 `cursor` - курсор к базе данных для получения через `with ... as cursor:`
         """
+        self.deepness += 1
+        if self.deepness > 1:
+            return self.cursor
         self.db = sqlite3.connect(self.path)
         self.cursor = self.db.cursor()
         self.cursor.execute("PRAGMA foreign_keys = ON;")
@@ -36,9 +40,12 @@ class db_file:
         `exc_val` - значение ошибки, если таковая есть\n
         `exc_tb` - ?
         """
-        if exc_type:
-            print(f"An exception occurred: {exc_val}")
-            self.db.rollback()
-        else:
-            self.db.commit()
-        self.db.close()
+        self.deepness -= 1
+        if self.deepness <= 0:
+            self.deepness = 0
+            if exc_type:
+                print(f"An exception occurred: {exc_val}")
+                self.db.rollback()
+            else:
+                self.db.commit()
+            self.db.close()

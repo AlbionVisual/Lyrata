@@ -3,7 +3,7 @@ from .db_documents import db_documents
 class db_document_with_change_methods(db_documents):
     def add_document_content(self, document_id, block_type, *, parent_id:int = None, order_in_parent: int = None, attrs_json:str = None, data_json:str = None, content_json:str = None):
         """
-        Пытается добавить элемент в какой-то документ по его идентификатору
+        Пытается добавить элемент в какой-то документ по идентификатору
 
         `document_id` - идентификатор документа\n
         `block_type` - тип блока\n
@@ -27,10 +27,16 @@ class db_document_with_change_methods(db_documents):
                 if ans:
                     order_in_parent = max([el[0] for el in ans]) + 1
         elif type(order_in_parent) is not int: raise TypeError("db_api->add_document_content: order_in_parent must be integer!")
+        res = -1
         with self as cursor:
             cursor.execute("UPDATE blocks SET order_in_parent = order_in_parent + 1 WHERE (parent_id = ? or parent_id IS NULL AND ? IS NULL) AND order_in_parent >= ?", (parent_id, parent_id, order_in_parent))
             cursor.execute("INSERT INTO blocks (document_id, type, order_in_parent, parent_id, attrs_json, data_json, content_json) VALUES (?, ?, ?, ?, ?, ?, ?)", (document_id, block_type, order_in_parent, parent_id,attrs_json, data_json, content_json))
+            cursor.execute("SELECT id FROM blocks WHERE document_id = ? AND (parent_id = ? or parent_id IS NULL AND ? IS NULL) AND type = ?", (document_id, parent_id, parent_id, block_type))
+            lst = cursor.fetchall()
+            if len(lst) == 0: raise ValueError("db_document_with_change_methods->add_document_content: unexpected error, element wasn't found")
+            res = lst[-1][0]
         self.update_document(document_id)
+        return res
 
     def update_block(self, block_id:int,*,new_block_type:str = None, new_attrs_json:str = None, new_data_json:str = None, new_content_json:str = None):
         """
