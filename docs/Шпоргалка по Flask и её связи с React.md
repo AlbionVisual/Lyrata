@@ -1,8 +1,8 @@
 ### Содержание
 
 1. [До начала работы](#0-до-начала-работы)
-	1. [Установите Flask](#установите-flask)
-	2. [Установите Flask-CORS](#установите-flask-cors)
+   1. [Установите Flask](#установите-flask)
+   2. [Установите Flask-CORS](#установите-flask-cors)
 2. [Как в общем выглядит модуль с Flask на Python и как это принимается из React](#1-как-в-общем-выглядит-модуль-с-flask-на-python-и-как-это-принимается-из-react)
 3. [Отправка и получение данных (GET)](#2-отправка-и-получение-данных-get)
 4. [Отправка данных (POST)](#3-отправка-данных-post)
@@ -11,6 +11,15 @@
 7. [Что такое REST API](#6-что-такое-rest-api)
 8. [Что такое `fetch` API](#7-что-такое-fetch-api)
 9. [Что такое CORS](#8-что-такое-cors)
+10. [Стриминг данных при помощи Server-Sent Events (SSE)](#9-стриминг-данных-при-помощи-server-sent-events-sse)
+    1. [Ключевые особенности SSE](#ключевые-особенности-sse)
+    2. [SSE в Flask (Бэкенд)](#sse-в-flask-бэкенд)
+    3. [Пример Flask-бэкенда с SSE](#пример-flask-бэкенда-с-sse)
+    4. [SSE в React (Фронтенд)](#sse-в-react-фронтенд)
+    5. [Пример React-компонента для получения прогресса по SSE](#пример-react-компонента-для-получения-прогресса-по-sse)
+    6. [Общий рабочий процесс для сложной операции](#общий-рабочий-процесс-для-сложной-операции)
+    7. [Когда использовать SSE?](#когда-использовать-sse)
+    8. [Ограничения и соображения](#ограничения-и-соображения)
 
 ### 0. До начала работы
 
@@ -18,13 +27,15 @@
 
 ##### Установите Flask:
 
-    `pip install Flask`
-    Эта команда установит Flask и его основные зависимости (Werkzeug, Jinja2, Click) в вашу виртуальную среду.
+`pip install Flask`
+
+Эта команда установит Flask и его основные зависимости (Werkzeug, Jinja2, Click) в вашу виртуальную среду.
 
 ##### Установите Flask-CORS:
 
-    Для взаимодействия с React-приложением, которое обычно запускается на другом порту или домене, необходимо настроить Cross-Origin Resource Sharing (CORS). Для Flask существует удобное расширение Flask-CORS.
-    `pip install Flask-CORS`
+Для взаимодействия с React-приложением, которое обычно запускается на другом порту или домене, необходимо настроить Cross-Origin Resource Sharing (CORS). Для Flask существует удобное расширение Flask-CORS.
+
+`pip install Flask-CORS`
 
 ### 1. Как в общем выглядит модуль с Flask на Python и как это принимается из React
 
@@ -280,3 +291,245 @@ fetch('https://api.example.com/submit', {
 Для того чтобы разрешить кросс-доменные запросы, сервер (в данном случае Flask) должен явно указать, какие источники, методы и заголовки разрешены. Это делается путем добавления специальных HTTP-заголовков в ответы сервера.
 
 Расширение **Flask-CORS** упрощает эту задачу, позволяя легко настроить необходимые заголовки CORS в вашем Flask-приложении. Например, `CORS(app)` в Flask-приложении по умолчанию разрешает запросы со всех источников (`*`) для всех методов, что удобно для разработки. В продакшене рекомендуется явно указывать разрешенные источники для повышения безопасности.
+
+### 9. Стриминг данных при помощи Server-Sent Events (SSE)
+
+**Server-Sent Events (SSE)** — это технология, которая позволяет веб-серверу отправлять автоматические "пуш"-уведомления (потоки событий) клиенту через одно HTTP-соединение. В отличие от WebSockets, SSE является однонаправленной связью (сервер -> клиент), что делает её идеальной для сценариев, где клиенту нужно получать обновления от сервера, но не отправлять много данных в ответ (например, уведомления, ленты новостей, прогресс выполнения задач).
+
+#### Ключевые особенности SSE
+
+**Однонаправленная связь:** Данные идут только от сервера к клиенту.
+**Использует HTTP:** Работает поверх стандартного HTTP, что упрощает развертывание и совместимость с существующей сетевой инфраструктурой (прокси, балансировщики нагрузки).
+**Автоматическое переподключение:** Браузер автоматически пытается переподключиться, если соединение прерывается.
+**Формат данных:** События передаются в простом текстовом формате `text/event-stream`. Каждое событие состоит из полей `data:`, `event:`, `id:` и `retry:`.
+
+#### SSE в Flask (Бэкенд)
+
+Для реализации SSE во Flask, мы будем использовать генератор, который будет отправлять данные клиенту по мере их появления. Flask позволяет обернуть генератор в объект `Response` с соответствующим `mimetype`.
+
+**Основные шаги**
+
+1.  **Импорт необходимых модулей:** `Response` и `stream_with_context` из `flask`.
+2.  **Определение маршрута:** Создайте маршрут, который будет служить точкой входа для SSE-соединения.
+3.  **Функция-генератор:** Эта функция будет генерировать события. Она должна возвращать строки в формате SSE.
+    - Каждое событие должно заканчиваться двумя символами новой строки (`\n\n`).
+    - `data:`: Содержимое события.
+    - `event:` (опционально): Имя события, позволяет клиенту слушать конкретные типы событий.
+    - `id:` (опционально): Уникальный идентификатор события, используется для автоматического переподключения.
+    - `retry:` (опционально): Время в миллисекундах, через которое клиент должен попытаться переподключиться.
+4.  **Обработка долгой операции:** **Важно!** Сама долгая операция не должна выполняться синхронно в той же функции, которая генерирует SSE. Это заблокирует соединение. Вместо этого, долгая операция должна быть запущена в отдельном потоке, процессе или с помощью очереди задач (Celery, RQ), а SSE-маршрут должен лишь "слушать" её прогресс (например, через Redis Pub/Sub, очередь или общую переменную).
+
+#### Пример Flask-бэкенда с SSE
+
+```python
+from flask import Flask, Response, stream_with_context
+import time
+import threading
+import queue # Используем очередь для передачи прогресса из фоновой задачи
+
+app = Flask(__name__)
+
+# Словарь для хранения очередей прогресса для каждой задачи
+# В реальном приложении это может быть Redis Pub/Sub или база данных
+task_progress_queues = {}
+
+# Имитация долгой операции, которая обновляет прогресс
+def long_running_task(task_id):
+    if task_id not in task_progress_queues:
+        task_progress_queues[task_id] = queue.Queue()
+
+    q = task_progress_queues[task_id]
+    for i in range(101):
+        time.sleep(0.1) # Имитация работы
+        # Отправляем прогресс в очередь
+        q.put(f"data: {i}\n\n")
+    q.put("data: DONE\n\n") # Сообщаем о завершении
+
+@app.route('/start_task/<task_id>', methods=['POST'])
+def start_task(task_id):
+    """Эндпоинт для запуска долгой задачи."""
+    if task_id in task_progress_queues and not task_progress_queues[task_id].empty():
+        return {"message": f"Task {task_id} already running or has pending data."}, 409
+
+    # Запускаем задачу в отдельном потоке
+    thread = threading.Thread(target=long_running_task, args=(task_id,))
+    thread.start()
+    return {"message": f"Task {task_id} started."}, 202
+
+@app.route('/sse_progress/<task_id>')
+def sse_progress(task_id):
+    """Эндпоинт для получения прогресса по SSE."""
+    if task_id not in task_progress_queues:
+        return Response("data: Task not found or not started\n\n", mimetype='text/event-stream')
+
+    q = task_progress_queues[task_id]
+
+    def generate_events():
+        while True:
+            try:
+                # Получаем данные из очереди, таймаут чтобы не блокировать навсегда
+                message = q.get(timeout=1)
+                yield message
+                if "DONE" in message:
+                    del task_progress_queues[task_id] # Очищаем очередь после завершения
+                    break
+            except queue.Empty:
+                # Если очередь пуста, отправляем "keep-alive" сообщение,
+                # чтобы соединение не закрывалось по таймауту
+                yield "data: keep-alive\n\n"
+                time.sleep(1) # Не спамить CPU
+            except GeneratorExit:
+                # Клиент отключился, очищаем очередь
+                print(f"Client disconnected from task {task_id}")
+                if task_id in task_progress_queues:
+                    # Очищаем очередь, чтобы фоновая задача не зависла
+                    while not task_progress_queues[task_id].empty():
+                        task_progress_queues[task_id].get_nowait()
+                    del task_progress_queues[task_id]
+                break # Выходим из цикла генератора
+
+    return Response(stream_with_context(generate_events()), mimetype='text/event-stream')
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True) # threaded=True для поддержки нескольких SSE-соединений
+```
+
+#### SSE в React (Фронтенд)
+
+На стороне клиента для работы с SSE используется встроенный в браузер API `EventSource`.
+
+**Основные шаги:**
+
+1.  **Создание объекта `EventSource`:** Передайте URL вашего SSE-эндпоинта.
+2.  **Обработчики событий:**
+    - `onopen`: Вызывается при успешном открытии соединения.
+    - `onmessage`: Вызывается при получении любого события без указанного `event:` поля. Объект `event` будет содержать поле `data` с содержимым события.
+    - `onerror`: Вызывается при ошибке соединения.
+    - `addEventListener(eventName, handler)`: Позволяет слушать события с конкретным полем `event:`.
+3.  **Очистка:** Важно закрывать соединение `EventSource` при размонтировании компонента React, чтобы избежать утечек памяти и лишних соединений. Используйте `useEffect` с функцией очистки.
+
+#### Пример React-компонента для получения прогресса по SSE
+
+```javascript
+import React, { useState, useEffect } from "react";
+
+function TaskProgress({ taskId }) {
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState("Idle");
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // 1. Запускаем задачу на бэкенде (например, через fetch POST запрос)
+    fetch(`/start_task/${taskId}`, { method: "POST" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data.message);
+        setStatus("Starting...");
+
+        // 2. После успешного запуска, открываем SSE-соединение
+        const eventSource = new EventSource(`/sse_progress/${taskId}`);
+
+        eventSource.onopen = () => {
+          console.log("SSE connection opened for task:", taskId);
+          setStatus("Connected, waiting for progress...");
+          setError(null); // Сбрасываем ошибку при успешном подключении
+        };
+
+        eventSource.onmessage = (event) => {
+          const data = event.data;
+          console.log("Received SSE message:", data);
+
+          if (data === "DONE") {
+            setStatus("Completed!");
+            setProgress(100);
+            eventSource.close(); // Закрываем соединение после завершения
+          } else if (data === "keep-alive") {
+            // Игнорируем сообщения "keep-alive"
+            // console.log('Keep-alive received.');
+          } else if (data.startsWith("Task not found")) {
+            setStatus("Error: Task not found or not started.");
+            setError(data);
+            eventSource.close();
+          } else {
+            const newProgress = parseInt(data, 10);
+            if (!isNaN(newProgress)) {
+              setProgress(newProgress);
+              setStatus("Processing...");
+            }
+          }
+        };
+
+        eventSource.onerror = (errorEvent) => {
+          console.error("SSE Error for task:", taskId, errorEvent);
+          setStatus("Error!");
+          setError("SSE connection error. Check console for details.");
+          eventSource.close(); // Закрываем соединение при ошибке
+        };
+
+        // Функция очистки: закрываем EventSource при размонтировании компонента
+        return () => {
+          eventSource.close();
+          console.log("SSE connection closed for task:", taskId);
+        };
+      })
+      .catch((err) => {
+        console.error("Failed to start task or connect SSE:", err);
+        setStatus("Failed to start task.");
+        setError(err.message);
+      });
+  }, [taskId]); // Зависимость от taskId, чтобы переподключаться при его изменении
+
+  return (
+    <div>
+      <h3>Task ID: {taskId}</h3>
+      <p>Status: {status}</p>
+      <p>Progress: {progress}%</p>
+      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+    </div>
+  );
+}
+
+// Пример использования в App.js
+function App() {
+  return (
+    <div className="App">
+      <h1>SSE Progress Demo</h1>
+      <TaskProgress taskId="my_long_operation_1" />
+      <TaskProgress taskId="another_task_2" />
+    </div>
+  );
+}
+
+export default App;
+```
+
+#### Общий рабочий процесс для сложной операции
+
+1.  **Клиент (React)** отправляет HTTP-запрос (например, `POST /start_task/<task_id>`) на бэкенд Flask, чтобы инициировать сложную операцию.
+2.  **Бэкенд (Flask)** получает запрос:
+    - Запускает сложную операцию в отдельном потоке/процессе или отправляет её в очередь задач (Celery/RQ).
+    - Возвращает клиенту подтверждение (например, `202 Accepted`) и, возможно, `task_id`.
+3.  **Клиент (React)**, получив подтверждение, открывает новое SSE-соединение к эндпоинту `/sse_progress/<task_id>`.
+4.  **Сложная операция** (в отдельном потоке/процессе) по мере выполнения периодически отправляет свой прогресс в некий механизм обмена данными (например, `queue.Queue` в нашем примере, или Redis Pub/Sub в продакшене).
+5.  **SSE-эндпоинт Flask** постоянно "слушает" этот механизм обмена данными. Как только появляются новые данные о прогрессе, он форматирует их в SSE-событие (`data: <прогресс>\n\n`) и отправляет клиенту.
+6.  **Клиент (React)** получает SSE-события через `eventSource.onmessage` и обновляет UI (например, прогресс-бар).
+7.  Когда сложная операция завершена, она отправляет финальное сообщение (`data: DONE\n\n`), и SSE-соединение закрывается.
+
+#### Когда использовать SSE?
+
+- **Однонаправленные обновления:** Идеально подходит, когда сервер является источником истины и просто "пушит" обновления клиенту.
+- **Прогресс выполнения задач:** Отслеживание статуса длительных операций.
+- **Ленты новостей, уведомления:** Получение новых статей, сообщений в реальном времени.
+- **Меньшая сложность:** Проще в реализации и отладке, чем WebSockets, если двунаправленная связь не нужна.
+
+#### Ограничения и соображения
+
+- **Однонаправленность:** Если вам нужна двунаправленная связь (например, чат, интерактивные игры), используйте WebSockets.
+- **Количество соединений:** Браузеры могут ограничивать количество одновременных SSE-соединений к одному домену (обычно 6-8).
+- **Совместимость:** IE/Edge до недавнего времени не поддерживали `EventSource` (но современные Edge на Chromium поддерживают).
+- **Масштабирование:** Для больших нагрузок и множества клиентов потребуется использовать брокер сообщений (Redis Pub/Sub, RabbitMQ, Kafka) для эффективной передачи прогресса от рабочих процессов к SSE-серверу. Flask-приложение должно быть способно обрабатывать множество одновременных SSE-соединений (например, с помощью Gunicorn + Gevent/Eventlet или асинхронного фреймворка, такого как FastAPI).
