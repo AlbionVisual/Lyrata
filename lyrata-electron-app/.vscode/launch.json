@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch", // Или "attach"
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:3000", // Убедитесь, что это порт, на котором работает ваше React-приложение
+      "webRoot": "F:\\Projects\\Lyrata\\lyrata-electron-app\\src", // Указывает, где находятся ваши исходные файлы
+      "sourceMaps": true, // Убедитесь, что source maps включены
+      "sourceMapPathOverrides": {
+        "webpack:///./src/*": "${webRoot}/*", // Для Create React App
+        "webpack://src/*": "${webRoot}/*", // Для некоторых других конфигураций Webpack
+        "vite:///*": "${webRoot}/*" // Для Vite
+      },
+      // "userDataDir": "${workspaceFolder}/.vscode/arc-debug-profile",
+      // "runtimeExecutable": "C:\\Program Files\\WindowsApps\\TheBrowserCompany.Arc_1.67.0.264_x64__ttt1ap7aakyb4\\Arc.exe", // Замените на фактический путь
+      // "runtimeArgs": [
+      //   "--new-window",
+      //   "--incognito",
+      //   "--remote-debugging-port=9222"
+      // ],
+    }
+  ]
+}

@@ -10,11 +10,18 @@
           {
             "id": "4fb4d64f3de0e3c9",
             "type": "leaf",
+            "pinned": true,
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Идея, как контекст.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "pinned": true,
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Идея, как контекст"
             }
           }
         ]
@@ -76,6 +83,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "canvas:Create new canvas": false,
       "command-palette:Open command palette": false,
       "random-note:Open random note": false
@@ -83,20 +91,21 @@
   },
   "active": "4fb4d64f3de0e3c9",
   "lastOpenFiles": [
-    "Шпоргалка по SQLite и python sqlite3.md",
-    "Шпоргалка по React.md",
-    "Шпоргалка по Flask и её связи с React.md",
+    "Демо-рассказ.md",
     "Шпоргалка по командам python, git и npm.md",
-    "Untitled.md",
-    "Шпоргалка по Python venv.md",
+    "Решаемая проблема.md",
+    "Идея, как контекст.md",
     "Части приложения.md",
     "Функционал приложения.md",
-    "Решаемая проблема.md",
     "Краткое overview.md",
+    "Инструменты классификации внутри lybrosa.md",
+    "Из чего будет состоять Python-бэкенд.md",
+    "Шпоргалка по Flask и её связи с React.md",
+    "Шпоргалка по SQLite и python sqlite3.md",
+    "Шпоргалка по React.md",
+    "Шпоргалка по Python venv.md",
     "Разговор с ИИ.md",
     "Пользовательский интерфейс.md",
-    "Инструменты классификации внутри lybrosa.md",
-    "Демо-рассказ.md",
     "Chapter 1 - Rainbow Alicon - Fall.md",
     "~syncthing~Части приложения.sync-conflict-20250725-063047-C4Z6EET.md.tmp"
   ]
