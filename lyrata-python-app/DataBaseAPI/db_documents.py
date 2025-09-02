@@ -32,17 +32,27 @@ class db_documents(db_file):
                 cursor.execute("CREATE INDEX idx_blocks_document_id ON blocks (document_id);")
                 cursor.execute("CREATE INDEX idx_blocks_parent_id_order ON blocks (parent_id, order_in_parent);")
 
-    def get_documents(self):
+    def get_documents(self, amount = 0, *,id = -1):
         """
         Делает запрос на получение всех документов, хранящихся в базе данных
+
+        `amount` - количесвто возвращаемых сообщений (по умолчанию все, т. е. 0)\n
+        `id` - точный идентификатор получаемого документа (по умолчанию -1, т. е. без ограничений) (при установки идентификатора `amount` - не учитывается)
 
         Returns:
                 `documents` - массив кортежей, содержащий все строки таблицы `documents`
         """
         res = None
         with self as cursor:
-            cursor.execute("SELECT * FROM documents")
-            res = cursor.fetchall()
+            if type(id) != int or id == -1:
+                if type(amount) == int and amount != 0 :
+                    cursor.execute("SELECT * FROM documents ORDER BY updated_at DESC LIMIT ?", (amount, ))
+                else:
+                    cursor.execute("SELECT * FROM documents ORDER BY updated_at DESC")
+                res = cursor.fetchall()
+            else:
+                cursor.execute("SELECT * FROM documents WHERE id = ? LIMIT 1", (id,))
+                res = cursor.fetchall()
         return res
     
     def add_document(self, name:str, author: str = "Lyrata"):
@@ -72,13 +82,14 @@ class db_documents(db_file):
         with self as cursor:
             cursor.execute("DELETE FROM documents WHERE id = ?", (id, ))
     
-    def update_document(self, id:int, name:str = None, author:str = None):
+    def update_document(self, id:int, name:str = None, author:str = None, reading_progress: int = None):
         """
-        Обновляет имя, либо автора документа, если таковые аргументы предоставлены. Всегда обновляет время последнего изменения
+        Обновляет имя, либо автора документа, либо прогресс чтения, если таковые аргументы предоставлены. Всегда обновляет время последнего изменения
 
         `id` - уникальный идентификатор целевого документа\n
         `name` - новое имя, либо None, если его обновлять не надо (по умолчанию None)\n
         `author` - новый автор, либо None, если его обновлять не надо (по умолчанию None)
+        `reading_progress` - новое значение для прогресса чтения документа, либо None, если его обновлять **не надо** (по умолчанию None)
         """
         if (type(id) is not int): raise TypeError("db_api->update_document: You need to provide at least document's id!")
         time = str(datetime.now())
@@ -87,5 +98,7 @@ class db_documents(db_file):
                 cursor.execute("UPDATE documents SET name = ? WHERE id = ?", (name, id))
             if (author):
                 cursor.execute("UPDATE documents SET author = ? WHERE id = ?", (author, id))
+            if (reading_progress):
+                cursor.execute("UPDATE documents SET reading_progress = ? WHERE id = ?", (reading_progress, id))
             cursor.execute("UPDATE documents SET updated_at = ? WHERE id = ?", (time, id))
         

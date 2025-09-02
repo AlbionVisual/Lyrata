@@ -78,14 +78,16 @@
 
 # db = db_api("F:\Projects\Lyrata\my_database.db")
 
-# read_file("F:\Projects\Lyrata\docs\Решаемая проблема.md", db)
+# read_file("F:\Projects\Lyrata\\big_text.md", db)
 
-# print(get_text(db, 13))
+# print(db.get_documents())
+
+# print(get_text(db, 1))
 
 # ----- AiTextProcessing -----
 # from DataBaseAPI import db_api
 # from AiTextProcessing import analise_document
 
 # db = db_api("F:\Projects\Lyrata\my_database.db")
-# analise_document(14, db)
+# analise_document(2, db)
 

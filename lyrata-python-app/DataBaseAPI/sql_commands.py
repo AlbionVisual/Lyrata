@@ -3,7 +3,8 @@ create_table_documents = """CREATE TABLE documents (
     name TEXT NOT NULL,
     author TEXT,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    reading_progress INTEGER
 );"""
 
 create_table_blocks = """CREATE TABLE blocks (

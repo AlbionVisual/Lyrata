@@ -53,4 +53,5 @@ def analise_document(document_id: int, db: db_api,*, division_type: str = "sente
 
             # Вставка
             paragraph_data[max(span[0] - poses[poses_ind]['positions'][0], 0)] = result
+            # print(paragraph_data)
             db.update_block(poses[poses_ind]['id'], new_data_json=dumps(paragraph_data))

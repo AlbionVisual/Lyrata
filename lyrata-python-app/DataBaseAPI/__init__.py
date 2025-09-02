@@ -1,3 +1,4 @@
+import json
 from .sql_commands import *
 from .db_document_with_change_methods import db_document_with_change_methods
 
@@ -73,6 +74,8 @@ class db_api(db_document_with_change_methods):
             else:
                 cursor.execute(sql_commands.hierarchichal_sort, (id,id))
             res = cursor.fetchall()
+        for i, block in enumerate(res):
+            res[i] = [*block[:5], json.loads(block[5]) if block[5] is not None else None, json.loads(block[6]) if block[6] is not None else None, *block[7:]]
         return res
 
 def get_text(document: list[tuple])->str:

@@ -107,8 +107,8 @@ def get_text(db:db_api, document_id:int)->str:
     `document_id` - уникальный идентификатор документа
 
     Returns:
-            `text` - сложенный воедино чистый текст без форматирования
-            `parts`
+            `text` - сложенный воедино чистый текст без форматирования\n
+            `parts` - разбиение. Массив с элементами: {id: integer, positions: [integer, integer]}
     """
     res = ''
     ind = 0
