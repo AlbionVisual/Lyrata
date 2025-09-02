@@ -7,7 +7,6 @@
     margin-bottom: 1vh;
     max-width: 80vw;
     line-height: 1.2;
-    transform: translateX(-10%);
     cursor: pointer;
     color: black;
 }

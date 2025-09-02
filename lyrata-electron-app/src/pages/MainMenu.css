@@ -60,3 +60,7 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+.MainMenu .Menu .MenuListItem {
+    transform: translateX(-10%);
+}

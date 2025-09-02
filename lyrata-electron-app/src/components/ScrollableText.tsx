@@ -1,13 +1,13 @@
-// src/components/ScrollableText.tsx
 import React, { useRef, useEffect, useCallback } from "react";
 import styles from "./ScrollableText.module.css";
 
 const RESISTANCE = 50;
-const STIFFNESS = 20;
+const STIFFNESS = 30;
 const VELOCITY_THRESHOLD = 1.0;
 const POSITION_THRESHOLD = 1.0;
 const SELECTION_OFFSET = 100;
-const MAX_VELOCITY = 100;
+const MAX_VELOCITY = 1000;
+const MAX_ACCELERATION = 100;
 
 interface ScrollableTextProps {
   children: React.ReactNode;
@@ -15,6 +15,9 @@ interface ScrollableTextProps {
   enableUserScrolling?: boolean;
   magnetizeInstanteniouslyTo?: HTMLElement;
 }
+
+let prevSelectionPos: number | undefined;
+let prevMagnetizeInstanteniouslyTo: HTMLElement | undefined;
 
 function ScrollableText({
   children,
@@ -31,7 +34,7 @@ function ScrollableText({
   const animateScroll = useCallback(
     (timestamp: DOMHighResTimeStamp) => {
       const container = containerRef.current;
-      if (!container || selectionPos == null) {
+      if (!container || selectionPos === undefined) {
         // Если что-то не то, останавливаем всё
         animationFrameId.current = null;
         lastTimestampRef.current = null;
@@ -61,9 +64,12 @@ function ScrollableText({
       // Вычисляем ускорение физически:
       // F = k * x - b * v
       // a = F / m
-      const acceleration =
+      let acceleration =
         (STIFFNESS * displacement - RESISTANCE * currentVelocityRef.current) /
         1; // масса равна единице, всё всё ещё можно контролировать при помощи остальных констант
+      acceleration =
+        Math.sign(acceleration) *
+        Math.min(Math.abs(acceleration), MAX_ACCELERATION); // Срезаем лишнюю часть ускорения
       // Обновляем скорость и позицию
       currentVelocityRef.current +=
         Math.sign(acceleration * deltaTime) *
@@ -90,15 +96,17 @@ function ScrollableText({
     [selectionPos]
   );
 
-  useEffect(() => {
-    if (selectionPos != null) {
+  if (selectionPos !== prevSelectionPos) {
+    prevSelectionPos = selectionPos;
+    if (selectionPos !== null) {
       // Запускаем анимацию, если есть целевая позиция
       if (animationFrameId.current !== null) {
         cancelAnimationFrame(animationFrameId.current);
       }
       if (lastTimestampRef.current !== null) lastTimestampRef.current = null;
-      if (containerRef.current)
+      if (containerRef.current) {
         currentPositionRef.current = containerRef.current.scrollTop;
+      }
       animationFrameId.current = requestAnimationFrame(animateScroll);
     } else {
       // Останавливаем анимацию
@@ -109,7 +117,21 @@ function ScrollableText({
         currentVelocityRef.current = 0;
       }
     }
-  }, [selectionPos, animateScroll]); // Зависимости: selectionPos и мемоизированная animateScroll
+  }
+
+  if (magnetizeInstanteniouslyTo !== prevMagnetizeInstanteniouslyTo) {
+    prevMagnetizeInstanteniouslyTo = magnetizeInstanteniouslyTo;
+    if (magnetizeInstanteniouslyTo) {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null;
+      }
+      magnetizeInstanteniouslyTo.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -121,19 +143,6 @@ function ScrollableText({
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (magnetizeInstanteniouslyTo) {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
-      }
-      magnetizeInstanteniouslyTo.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [magnetizeInstanteniouslyTo]);
 
   // Управление пользовательской прокруткой: определяем классы CSS для контейнера
   const containerClasses = [

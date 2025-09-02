@@ -1,4 +1,4 @@
-import Reac, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "./Menu.css";
 
 interface MenuProps {
@@ -7,61 +7,82 @@ interface MenuProps {
   onItemActivate?: (id: number) => void;
   onSelectionChange?: (id: number) => void;
   enableEvents?: boolean;
+  selectionMoveType?: "indexed" | "elemented";
 }
 
 function Menu({
-  onItemActivate,
   menuPositions,
+  onItemActivate,
   onSelectionChange,
   selectedId = 0,
   enableEvents = true,
+  selectionMoveType = "indexed",
 }: MenuProps) {
-  const [locallySelectedId, setLocallySelectedId] = useState<number>(0);
+  const [locallySelectedId, setLocallySelectedId] =
+    useState<number>(selectedId);
 
   const handelKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!enableEvents) return;
       let buffSelection = locallySelectedId;
-      let len = menuPositions[0].id;
-      menuPositions.forEach((data) => {
-        if (len < data.id) len = data.id;
-      });
-      len += 1;
 
       switch (event.key) {
         case "ArrowDown":
         case "ArrowRight":
-          buffSelection =
-            buffSelection + 1 >= len ? buffSelection : buffSelection + 1;
-          event.preventDefault();
+          if (selectionMoveType === "indexed") {
+            let len = menuPositions[0].id;
+            menuPositions.forEach((data) => {
+              if (len < data.id) len = data.id;
+            });
+            len += 1;
+            buffSelection =
+              buffSelection + 1 >= len ? buffSelection : buffSelection + 1;
+          } else {
+            const current_ind = menuPositions.findIndex(
+              (el) => el.id === buffSelection
+            );
+            buffSelection =
+              current_ind < menuPositions.length - 1
+                ? menuPositions[current_ind + 1].id
+                : menuPositions[menuPositions.length - 1].id;
+          }
+          // event.preventDefault();
           break;
         case "ArrowUp":
         case "ArrowLeft":
-          buffSelection =
-            buffSelection - 1 < 0 ? buffSelection : buffSelection - 1;
-          event.preventDefault();
+          if (selectionMoveType === "indexed") {
+            buffSelection =
+              buffSelection - 1 < 0 ? buffSelection : buffSelection - 1;
+          } else {
+            const current_ind = menuPositions.findIndex(
+              (el) => el.id === buffSelection
+            );
+            buffSelection =
+              current_ind > 0
+                ? menuPositions[current_ind - 1].id
+                : menuPositions[0].id;
+          }
+          // event.preventDefault();
           break;
         case "Enter":
-          event.preventDefault();
+          // event.preventDefault();
           if (onItemActivate) onItemActivate(locallySelectedId);
           return;
       }
-      setLocallySelectedId(buffSelection);
       if (onSelectionChange) onSelectionChange(buffSelection);
+      else setLocallySelectedId(buffSelection);
     },
     [locallySelectedId, menuPositions]
   );
 
+  // Вешание ивентов на окно
   useEffect(() => {
     document.addEventListener("keydown", handelKeyDown);
+
     return () => {
       document.removeEventListener("keydown", handelKeyDown);
     };
   }, [handelKeyDown]);
-
-  useEffect(() => {
-    setLocallySelectedId(selectedId);
-  }, [selectedId]);
 
   return (
     <div className="Menu">
@@ -77,8 +98,8 @@ function Menu({
             if (onItemActivate) onItemActivate(data.id);
           }}
           onMouseEnter={(e) => {
-            setLocallySelectedId(data.id);
             if (onSelectionChange) onSelectionChange(data.id);
+            else setLocallySelectedId(data.id);
           }}>
           {data.text}
         </div>

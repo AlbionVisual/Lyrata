@@ -1,38 +1,16 @@
-.TextSelectionArea {
-    width: 100%;
-    overflow: hidden;
-    resize: none;
-    height: auto;
-}
-
-.TextSelectionNameInput {
-    width: 80%;
-}
-
 .FlexContainer {
     display: flex;
     justify-content: space-between;
 }
 
-.TextSelectionPage {
-    max-height: 100vh;
-    overflow-y: auto;
-    padding-left: var(--text-side-padding);
-    padding-right: var(--text-side-padding);
-    width:calc(var(--text-side-padding)* -2 + 100vw);
-    &::-webkit-scrollbar {
-        display: none;
-        width: 0;
-        height: 0;
-        opacity: 0%;
-    }
+.FlexContainer>*:not(:first-child) {
+    padding-left: 2vw;
 }
 
-.TextSelectionPage > .Menu > div {
-    transform: none;
-    max-width: calc(var(--text-side-padding)*-2+100vw);
+.TextSelectionPage h2 {
+    width: 80vw;
 }
 
-.TextSelectionPageErrorMessage{
-    color:rgb(114, 0, 0)
+.TextSelectionAddButton {
+    font-size: medium;
 }
