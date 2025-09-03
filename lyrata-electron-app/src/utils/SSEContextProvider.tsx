@@ -9,15 +9,21 @@ import {
   DatabaseDocument,
   DatabaseTextBlock,
   DocumentProperties,
-} from "./useData";
+} from "./DatabaseTypes";
 import { SSEContext } from "./SSEContext";
 
 interface SSEContextProviderProps {
   children: React.ReactNode;
 }
 
-let prevDocId = -1;
+let prevDocId = -1; // Переменная для слежки за изменением документа и последующим обновлением текста
 
+/**
+ * Компонент, поставляющий контекст и всю логику обновления данных
+ *
+ * @param props.children Под дерево компонентов для использования контекста
+ * @returns Провайдер контекста с переданным поддеревом компонентов
+ */
 function SSEContextProvider({ children }: SSEContextProviderProps) {
   // Объявление данных
   const [currentDocument, setCurrentDocument] = useState<DatabaseDocument>([

@@ -3,7 +3,7 @@ import {
   DatabaseDocument,
   DatabaseTextBlock,
   DocumentProperties,
-} from "./useData";
+} from "./DatabaseTypes";
 
 interface Settings {
   current_document: [
@@ -25,6 +25,9 @@ interface ContextStorage {
   ];
 }
 
+/**
+ * Объявление контекста с значениями по умолчанию
+ */
 export const SSEContext = React.createContext<ContextStorage>({
   settings: { current_document: [[-1, "", "", "", "", -1], () => {}] },
   document_list: [[], () => {}],

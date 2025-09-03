@@ -8,7 +8,12 @@ import SSEContextProvider from "./utils/SSEContextProvider";
 
 const AvailableSelections = ["menu", "read", "text", "music", "settings"];
 
+/**
+ *
+ * @returns {JSX.Element} Всё основное визуальное приложение с контекстом и разными страницами.
+ */
 function App() {
+  // Логика и хранение выбора страницы
   const [currentPage, setCurrentPage] = useState<number>(0); // menu, read, text, music, settings
   const handlePageChange = useCallback((id: string | number = "menu") => {
     if (typeof id === "number") {
