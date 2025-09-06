@@ -185,7 +185,9 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
   return (
     <SSEContext.Provider
       value={{
-        settings: { current_document: [currentDocument, setCurrentDocument] },
+        settings: {
+          current_document: [currentDocument, setCurrentDocument],
+        },
         document_list: [documentList, setDocumentList],
         documents_properties: [
           documentListProperties,

@@ -1,36 +1,13 @@
-import React, {
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-  useContext,
-} from "react";
-import ScrollableText from "../components/ScrollableText";
-import { db_update } from "../utils/requests";
+import React, { useRef, useMemo, useContext } from "react";
 import { SSEContext } from "../utils/SSEContext";
 import { DatabaseEmotion } from "../utils/DatabaseTypes";
-import { HighlighterContext } from "../utils/HighlighterContext";
 import TextDrawer from "../components/TextDrawer";
 import "./ReadingPage.css";
+import TextSelectionController from "../components/TextSelectionController";
 
-interface ReadingPageProps {
-  selectionSize?: number;
-  selectionStep?: number;
-}
+interface ReadingPageProps {}
 
-export interface Highlighter {
-  startPos: number;
-  endPos: number;
-}
-
-let magnetised: Boolean = false;
-let reading_progress: number | undefined;
-
-function ReadingPage({
-  selectionSize = 120,
-  selectionStep = 100,
-}: ReadingPageProps) {
+function ReadingPage({}: ReadingPageProps) {
   const firstActivation = useRef(true);
 
   // Получение данных
@@ -38,59 +15,9 @@ function ReadingPage({
   const currentText = storage.current_text[0];
   const currentTextProperties = storage.settings.current_document[0];
 
-  // Состояния для отправки в скроллер
-  const [selectionPos, setSelectionPos] = useState<number>(
-    currentTextProperties[5]
-  );
-  const [magnetizeTo, setMagnetizeTo] = useState<HTMLDivElement | undefined>(
-    undefined
-  );
-
-  // Хранение данных о выделениях
-  let [hihglighter, presetHihglighter] = useState<Highlighter>({
-    startPos: currentTextProperties[5] !== -1 ? currentTextProperties[5] : 0,
-    endPos:
-      currentTextProperties[5] !== -1
-        ? currentTextProperties[5] + selectionSize
-        : selectionSize,
-  });
-  const setHihglighter = (newHighlighter: Highlighter) => {
-    presetHihglighter(newHighlighter);
-    reading_progress = newHighlighter.startPos;
-  };
-
-  // Обработка нажатия клавиш
-  const pressedKeys = useRef<Set<string>>(new Set<string>());
-  const handelKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (pressedKeys.current.has(event.key)) return;
-
-      switch (event.key) {
-        case "ArrowRight":
-        case "ArrowDown":
-          pressedKeys.current.add(event.key);
-          let otherCopy = { ...hihglighter };
-          otherCopy.startPos += selectionStep;
-          otherCopy.endPos = otherCopy.startPos + selectionSize;
-          setHihglighter(otherCopy);
-          break;
-        case "ArrowLeft":
-        case "ArrowUp":
-          pressedKeys.current.add(event.key);
-          let copy = { ...hihglighter };
-          copy.startPos -= selectionStep;
-          if (copy.startPos < 0) copy.startPos = 0;
-          copy.endPos = copy.startPos + selectionSize;
-          setHihglighter(copy);
-          break;
-      }
-    },
-    [selectionStep, hihglighter, selectionSize]
-  );
-
   // Рендерер текста по структуре данных
-  const gened_text = useMemo((): React.ReactNode => {
-    if (!currentText) return <>Загрузка...</>;
+  const gened_text = useMemo((): [React.ReactNode, number] => {
+    if (!currentText) return [<>Загрузка...</>, 0];
 
     let ind = 0;
     let currentTextOffset = 0;
@@ -137,48 +64,8 @@ function ReadingPage({
       return <>{ans.map((el) => el)}</>;
     };
 
-    return get_children();
+    return [get_children(), currentTextOffset];
   }, [currentText]);
-
-  // Вешание ивентов на окно
-  useEffect(() => {
-    document.addEventListener("keydown", handelKeyDown);
-
-    document.addEventListener("keyup", (event) => {
-      pressedKeys.current.delete(event.code);
-    });
-    return () => {
-      document.removeEventListener("keydown", handelKeyDown);
-    };
-  }, [handelKeyDown]);
-
-  const updateSelectionPos = useCallback((selectionTag: HTMLDivElement) => {
-    const newSelectionPos =
-      selectionTag.offsetTop + selectionTag.offsetHeight / 2;
-    setSelectionPos(newSelectionPos);
-    if (!magnetised) {
-      magnetised = true;
-      setMagnetizeTo(selectionTag);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (magnetised) {
-        db_update(`database/document/${currentTextProperties[0]}/progress`, {
-          progress: reading_progress
-            ? reading_progress
-            : currentTextProperties[5],
-        });
-        magnetised = false;
-      }
-    };
-  }, [currentTextProperties]);
-
-  // console.log("selectionPos: ", selectionPos);
-  // console.log("selectionOffsetTop: ", selectionTagRef.current?.offsetTop);
-  // window.outerHeight * 3;
-  // textElementRef.current?.scrollHeight
 
   if (firstActivation.current) {
     firstActivation.current = false;
@@ -187,21 +74,11 @@ function ReadingPage({
 
   return (
     <div className="ReadingPage">
-      <ScrollableText
-        enableUserScrolling={false}
-        selectionPos={selectionPos}
-        magnetizeInstanteniouslyTo={magnetizeTo}>
-        <div className="ReadingTextElement">
-          <HighlighterContext.Provider
-            value={{
-              startPos: hihglighter.startPos,
-              endPos: hihglighter.endPos,
-              updatePosFunc: updateSelectionPos,
-            }}>
-            {gened_text}
-          </HighlighterContext.Provider>
-        </div>
-      </ScrollableText>
+      <TextSelectionController
+        currentTextProperties={currentTextProperties}
+        textSize={gened_text[1]}>
+        <div className="ReadingTextElement">{gened_text[0]} </div>
+      </TextSelectionController>
     </div>
   );
 }

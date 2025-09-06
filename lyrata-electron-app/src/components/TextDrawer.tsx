@@ -9,7 +9,7 @@ import React, {
 import "./TextDrawer.css";
 import { DatabaseEmotion, DataEmotionMap } from "../utils/DatabaseTypes";
 import { HighlighterContext } from "../utils/HighlighterContext";
-import { Highlighter } from "../pages/ReadingPage";
+import { Highlighter } from "./TextSelectionController";
 
 interface TextDrawerProps {
   indexOffset: number;

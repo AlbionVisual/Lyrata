@@ -29,7 +29,9 @@ interface ContextStorage {
  * Объявление контекста со значениями по умолчанию
  */
 export const SSEContext = React.createContext<ContextStorage>({
-  settings: { current_document: [[-1, "", "", "", "", -1], () => {}] },
+  settings: {
+    current_document: [[-1, "", "", "", "", -1], () => {}],
+  },
   document_list: [[], () => {}],
   documents_properties: [[], () => {}],
   current_text: [[], () => {}],
