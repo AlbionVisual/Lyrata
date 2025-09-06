@@ -1,36 +1,88 @@
 import React, {
+  Fragment,
   useRef,
   useState,
   useCallback,
   useMemo,
+  useLayoutEffect,
   useEffect,
   useContext,
 } from "react";
 import ScrollableText from "../components/ScrollableText";
+import "./TextEditorPage.css";
 import { db_update } from "../utils/requests";
 import { SSEContext } from "../utils/SSEContext";
-import { DatabaseEmotion } from "../utils/DatabaseTypes";
-import { HighlighterContext } from "../utils/HighlighterContext";
-import TextDrawer from "../components/TextDrawer";
-import "./ReadingPage.css";
 
-interface ReadingPageProps {
+interface TextEditorPageProps {
   selectionSize?: number;
   selectionStep?: number;
 }
 
-export interface Highlighter {
+interface Highlighter {
   startPos: number;
   endPos: number;
 }
 
+const emotion_to_color = (emotion: string) => {
+  switch (emotion) {
+    case "aggression":
+      return "#eedada";
+    case "anxiety":
+      return "#dadaee";
+    case "sarcasm":
+      return "#eeeeda";
+    case "positive":
+      return "#daeeda";
+    case "normal":
+    default:
+      return "#eeeeee";
+  }
+};
+
+const color_text = (
+  content: string,
+  data: any,
+  lastEmotion: string,
+  indexOffset: number = 0
+): [React.ReactNode, string] => {
+  let ai = 0;
+  let res: React.ReactNode[] = [];
+  for (let ind in data) {
+    if (data[ind][0] === lastEmotion || Number(ind) < indexOffset) {
+      lastEmotion = data[ind][0];
+      continue;
+    }
+    res.push(
+      <span style={{ color: emotion_to_color(lastEmotion) }}>
+        {content.slice(ai, Number(ind) - indexOffset)}
+      </span>
+    );
+    ai = Number(ind) - indexOffset;
+    lastEmotion = data[ind][0];
+  }
+  res.push(
+    <span style={{ color: emotion_to_color(lastEmotion) }}>
+      {content.slice(ai)}
+    </span>
+  );
+  return [
+    <>
+      {res.map((el, ind) => (
+        <Fragment key={ind}>{el}</Fragment>
+      ))}
+    </>,
+    lastEmotion,
+  ];
+};
+
 let magnetised: Boolean = false;
+let prevSelectionTagRef: HTMLDivElement;
 let reading_progress: number | undefined;
 
-function ReadingPage({
+function TextEditorPage({
   selectionSize = 120,
   selectionStep = 100,
-}: ReadingPageProps) {
+}: TextEditorPageProps) {
   const firstActivation = useRef(true);
 
   // Получение данных
@@ -47,6 +99,7 @@ function ReadingPage({
   );
 
   // Хранение данных о выделениях
+  const selectionTagRef = useRef<HTMLDivElement>(null);
   let [hihglighter, presetHihglighter] = useState<Highlighter>({
     startPos: currentTextProperties[5] !== -1 ? currentTextProperties[5] : 0,
     endPos:
@@ -85,7 +138,7 @@ function ReadingPage({
           break;
       }
     },
-    [selectionStep, hihglighter, selectionSize]
+    [selectionStep, hihglighter]
   );
 
   // Рендерер текста по структуре данных
@@ -94,7 +147,60 @@ function ReadingPage({
 
     let ind = 0;
     let currentTextOffset = 0;
-    let lastEmotion: DatabaseEmotion = "normal";
+    let lastEmotion = "";
+
+    // Установка выделений, если таковые
+    const checkOffsets = (content: string, data: any): React.ReactNode => {
+      let ans: React.ReactNode;
+      const [h1, h2] = [hihglighter.startPos, hihglighter.endPos];
+      const [s1, s2] = [currentTextOffset, currentTextOffset + content.length];
+      if (Math.max(s1, h1) < Math.min(s2, h2)) {
+        let beforeSelection: React.ReactNode = "",
+          afterSelection: React.ReactNode = "",
+          selection = "";
+        let [a1, a2] = [0, content.length];
+        let reffed = false;
+        if (h1 >= s1) {
+          // Выделение в этом блоке только начинается
+          a1 = Math.trunc(h1 - s1);
+          while (content[a1] !== " " && a1 > 0) a1 -= 1;
+          [beforeSelection, lastEmotion] = color_text(
+            content.slice(0, a1),
+            data,
+            lastEmotion
+          );
+          reffed = true;
+        }
+        if (h2 < s2) {
+          // Выделение в этом блоке заканчивается
+          a2 = Math.trunc(h2 - s1);
+          while (a2 < content.length && content[a2] !== " ") a2 += 1;
+          [afterSelection, lastEmotion] = color_text(
+            content.slice(a2),
+            data,
+            lastEmotion,
+            a2
+          );
+        }
+        selection = content.slice(a1, a2);
+        ans = (
+          <>
+            {beforeSelection}
+            <span
+              key={a1}
+              className="textSelection"
+              ref={reffed ? selectionTagRef : undefined}>
+              {selection}
+            </span>
+            {afterSelection}
+          </>
+        );
+      } else {
+        [ans, lastEmotion] = color_text(content, data, lastEmotion);
+      }
+      currentTextOffset += content.length;
+      return ans;
+    };
 
     const get_children = (parent_id: number | null = null): React.ReactNode => {
       let ans: React.ReactNode[] = [];
@@ -104,23 +210,10 @@ function ReadingPage({
           const subel_content = currentText[ind][7];
           const subel_data = currentText[ind][6];
           ans.push(
-            <TextDrawer
-              key={currentText[ind][0]}
-              rawText={subel_content}
-              indexOffset={currentTextOffset}
-              data={subel_data}
-              defualtEmotion={lastEmotion}></TextDrawer>
+            <Fragment key={currentText[ind][0]}>
+              {checkOffsets(subel_content, subel_data)}
+            </Fragment>
           );
-          if (subel_data) {
-            const keysAsStrings = Object.keys(subel_data);
-            if (keysAsStrings.length !== 0) {
-              const largestKey = Math.max(
-                ...keysAsStrings.map((key) => parseInt(key, 10))
-              );
-              lastEmotion = subel_data[largestKey][0];
-            }
-          }
-          currentTextOffset += subel_content.length;
           ind += 1;
         } else {
           const new_parent_id = currentText[ind][0];
@@ -138,7 +231,7 @@ function ReadingPage({
     };
 
     return get_children();
-  }, [currentText]);
+  }, [currentText, hihglighter]);
 
   // Вешание ивентов на окно
   useEffect(() => {
@@ -152,15 +245,22 @@ function ReadingPage({
     };
   }, [handelKeyDown]);
 
-  const updateSelectionPos = useCallback((selectionTag: HTMLDivElement) => {
-    const newSelectionPos =
-      selectionTag.offsetTop + selectionTag.offsetHeight / 2;
-    setSelectionPos(newSelectionPos);
-    if (!magnetised) {
-      magnetised = true;
-      setMagnetizeTo(selectionTag);
+  useLayoutEffect(() => {
+    if (
+      selectionTagRef.current &&
+      selectionTagRef.current !== prevSelectionTagRef
+    ) {
+      prevSelectionTagRef = selectionTagRef.current;
+      const newSelectionPos =
+        selectionTagRef.current.offsetTop +
+        selectionTagRef.current.offsetHeight / 2;
+      setSelectionPos(newSelectionPos);
     }
-  }, []);
+    if (!magnetised && selectionTagRef.current) {
+      magnetised = true;
+      setMagnetizeTo(selectionTagRef.current);
+    }
+  });
 
   useEffect(() => {
     return () => {
@@ -173,7 +273,7 @@ function ReadingPage({
         magnetised = false;
       }
     };
-  }, [currentTextProperties]);
+  }, []);
 
   // console.log("selectionPos: ", selectionPos);
   // console.log("selectionOffsetTop: ", selectionTagRef.current?.offsetTop);
@@ -186,24 +286,15 @@ function ReadingPage({
   }
 
   return (
-    <div className="ReadingPage">
+    <div className="TextEditorPage">
       <ScrollableText
-        enableUserScrolling={false}
+        enableUserScrolling={true}
         selectionPos={selectionPos}
         magnetizeInstanteniouslyTo={magnetizeTo}>
-        <div className="ReadingTextElement">
-          <HighlighterContext.Provider
-            value={{
-              startPos: hihglighter.startPos,
-              endPos: hihglighter.endPos,
-              updatePosFunc: updateSelectionPos,
-            }}>
-            {gened_text}
-          </HighlighterContext.Provider>
-        </div>
+        <div className="ReadingTextElement">{gened_text}</div>
       </ScrollableText>
     </div>
   );
 }
 
-export default ReadingPage;
+export default TextEditorPage;

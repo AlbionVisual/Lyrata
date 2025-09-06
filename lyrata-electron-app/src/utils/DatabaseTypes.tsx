@@ -37,3 +37,15 @@ export type DatabaseTextBlock = [
   any,
   string
 ];
+
+export type DatabaseEmotion =
+  | "aggression"
+  | "positive"
+  | "normal"
+  | "negative"
+  | "anxiety"
+  | "sarcasm";
+
+export type DataEmotionMap = {
+  [key: number]: DatabaseEmotion[];
+};

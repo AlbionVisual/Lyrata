@@ -9,8 +9,8 @@ import {
   DatabaseDocument,
   DatabaseTextBlock,
   DocumentProperties,
-} from "./DatabaseTypes";
-import { SSEContext } from "./SSEContext";
+} from "../utils/DatabaseTypes";
+import { SSEContext } from "../utils/SSEContext";
 
 interface SSEContextProviderProps {
   children: React.ReactNode;

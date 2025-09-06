@@ -11,7 +11,7 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
   const document_list = storage.document_list[0];
 
   const handleAddDocument = useCallback(() => {
-    const path = "F:/Projects/Lyrata/docs/Демо-рассказ.md";
+    const path = "F:/Projects/Lyrata/docs/big_text_2.md";
     db_save("database/add_document", { path: path });
   }, []);
 

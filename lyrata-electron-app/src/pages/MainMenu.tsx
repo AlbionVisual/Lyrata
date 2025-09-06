@@ -1,8 +1,17 @@
+/**
+ * @module pages
+ */
+
+/**
+ * Компонент кнопки, который отображает текст и реагирует на клики.
+ * @param {string} props.text - Текст, отображаемый на кнопке.
+ * @param {function} props.onClick - Функция обратного вызова, вызываемая при клике.
+ * @returns {JSX.Element} Элемент кнопки.
+ */
 import { useContext, useMemo, useState } from "react";
 import "./MainMenu.css";
 import Menu from "./Menu";
 import { SSEContext } from "../utils/SSEContext";
-import { text } from "stream/consumers";
 
 const AvailableSelections = ["name", "read", "text", "music", "settings"];
 

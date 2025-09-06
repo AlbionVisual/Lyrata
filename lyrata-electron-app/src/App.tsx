@@ -4,14 +4,10 @@ import MainMenu from "./pages/MainMenu";
 import PageLayout from "./components/PageLayout";
 import ReadingPage from "./pages/ReadingPage";
 import TextSelectionPage from "./pages/TextSelectionPage";
-import SSEContextProvider from "./utils/SSEContextProvider";
+import SSEContextProvider from "./components/SSEContextProvider";
 
 const AvailableSelections = ["menu", "read", "text", "music", "settings"];
 
-/**
- *
- * @returns {JSX.Element} Всё основное визуальное приложение с контекстом и разными страницами.
- */
 function App() {
   // Логика и хранение выбора страницы
   const [currentPage, setCurrentPage] = useState<number>(0); // menu, read, text, music, settings
