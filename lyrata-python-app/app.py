@@ -1,4 +1,5 @@
-from AiTextProcessing import analise_document as external_analiser
+# from AiTextProcessing import analise_document as external_analiser
+def external_analiser(): return
 from flask import Flask, Response, request, jsonify, g
 from TextParsers import get_text, read_file
 from DataBaseAPI import db_api
@@ -93,10 +94,13 @@ def get_document_info(id):
 #         print('get_document: Wrong id provided')
 #         return jsonify({"error": f"Документ с ID {document_id} не найден."}), 404
 
-@app.route('/api/database/document/<int:document_id>', methods=['GET'])
-def get_document(document_id):
+@app.route('/api/database/document/<int:document_id>', defaults={'amount': 0, 'offset': 0})
+@app.route('/api/database/document/<int:document_id>/<int:offset>', defaults={'amount': 0})
+@app.route('/api/database/document/<int:document_id>/<int:offset>/<int:amount>', methods=['GET'])
+def get_document(document_id, offset, amount):
+    if amount == 0: amount = None
     db = get_db()
-    blocks = db.get_sorted_document(document_id)
+    blocks = db.get_sorted_document(document_id, offset, amount)
     if blocks:
         return jsonify(blocks)
     else:

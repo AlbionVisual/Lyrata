@@ -26,7 +26,7 @@ class db_api(db_document_with_change_methods):
     
     def get_sorted_document_python(self, id: int | str):
         """
-        Получает все блоки данного документа в правильно порядке благодаря python
+        Получает все блоки данного документа в правильно порядке благодаря python, не берёт часть, только весь документ
 
         `id` - строка-имя документа, либо уникальный идентификатор
 
@@ -55,11 +55,13 @@ class db_api(db_document_with_change_methods):
 
         return res
 
-    def get_sorted_document(self, id: int, amount:int = None, offset:int = None):
+    def get_sorted_document(self, id: int, offset:int = None, amount:int = None):
         """
-        Получает все блоки данного документа в правильном порядке благодаря sql-запросу
+        Получает все блоки данного документа в правильном порядке благодаря sql-запросу. Если указано и offset, и amount запрос будет брать amount элементов и добавит некоторое количество блоков родителей, не включённых в изначальный запрос, но имеющих ссылки в основных блоках
 
-        `id` - уникальный идентификатор документа
+        `id` - уникальный идентификатор документа\n
+        `offset` - сколько первых блоков не учитывать сначала\n
+        `amount` - сколько целевых блоков взять сначала
 
         Returns:
                 `block_array` - список блоков приписанных к этому документу в полностью отсортированном при помощи sql-запроса порядке. Один блок - кортеж вида: (id, document_id, parent_id, order_in_parent, type, attrs_json, data_json, content_json, depth)
@@ -69,8 +71,6 @@ class db_api(db_document_with_change_methods):
         with self as cursor:
             if amount is not None and offset is not None:
                 cursor.execute(sql_commands.hierarchichal_sort_with_range, (id, id, amount, offset))
-            elif amount is not None:
-                cursor.execute(sql_commands.hierarchichal_sort_with_limit, (id, id, amount))
             else:
                 cursor.execute(sql_commands.hierarchichal_sort, (id,id))
             res = cursor.fetchall()
