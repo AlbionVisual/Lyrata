@@ -6,10 +6,11 @@ import {
 } from "./DatabaseTypes";
 
 interface Settings {
-  current_document: [
-    DatabaseDocument,
-    React.Dispatch<React.SetStateAction<DatabaseDocument>>
-  ];
+  current_document: [DatabaseDocument, (new_val: DatabaseDocument) => void];
+  current_model_name: [number, (new_val: number) => void];
+  current_result_getter_type: [string, (new_val: string) => void];
+  current_smooth_type: [string, (new_val: string) => void];
+  current_division_type: [string, (new_val: string) => void];
 }
 
 interface ContextStorage {
@@ -31,6 +32,10 @@ interface ContextStorage {
 export const SSEContext = React.createContext<ContextStorage>({
   settings: {
     current_document: [[-1, "", "", "", "", -1], () => {}],
+    current_division_type: ["", () => {}],
+    current_result_getter_type: ["", () => {}],
+    current_model_name: [0, () => {}],
+    current_smooth_type: ["", () => {}],
   },
   document_list: [[], () => {}],
   documents_properties: [[], () => {}],

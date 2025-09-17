@@ -7,7 +7,7 @@
  */
 function db_fetch(url: string, data: any, method: string) {
   fetch("http://localhost:5000/api/" + url, {
-    method: method, // Указываем метод POST
+    method: method, // Указываем метод
     headers: {
       "Content-Type": "application/json", // Обязательно указываем тип контента как JSON
     },
