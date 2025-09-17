@@ -1,0 +1,6 @@
+{
+    "division_type": "sentence",
+    "result_getter_type": "weighted",
+    "smooth_type": "distanced",
+    "model_name": 0
+}
