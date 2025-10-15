@@ -17,7 +17,7 @@ CORS(app) # Инициализируем CORS для всего приложен
 
 def get_db():
     if 'db' not in g:
-        g.db = db_api("F:\Projects\Lyrata\my_database.db")
+        g.db = db_api("./data.db")
     return g.db
 
 @app.teardown_request
