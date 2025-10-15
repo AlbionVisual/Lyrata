@@ -28,7 +28,7 @@ app = Flask(__name__)
 CORS(app) # Инициализируем CORS для всего приложения. По умолчанию разрешает все источники.
 
 PATH_TO_SETTINGS = "F:\Projects\Lyrata\settgins.json"
-PATH_TO_DATABASE = "F:\Projects\Lyrata\my_database.db"
+PATH_TO_DATABASE = "./data.db"
 
 def get_db():
     if 'db' not in g:
