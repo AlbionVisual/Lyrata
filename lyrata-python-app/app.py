@@ -14,12 +14,13 @@ import os
 
 event_queue = queue.Queue()
 
-settings = {
-    "current_division_type": "sentence", # sentence | paragraph | tokened
+default_settings = {
+    "current_division_type": "tokened", # sentence | paragraph | tokened
     "current_result_getter_type": "weighted", # weighted | average
     "current_smooth_type": "distanced", # direct | distanced
-    "current_model_name": "Kostya165/rubert_emotion_slicer"
-} # Здесь по умолчанию
+    "current_model_name": "cointegrated/rubert-tiny2-cedr-emotion-detection"
+}
+settings = default_settings.copy()
 settings_lock = threading.Lock()
 model_lock = threading.Lock()
 model = TextAnaliser()
@@ -27,7 +28,7 @@ model = TextAnaliser()
 app = Flask(__name__)
 CORS(app) # Инициализируем CORS для всего приложения. По умолчанию разрешает все источники.
 
-PATH_TO_SETTINGS = "F:\Projects\Lyrata\settgins.json"
+PATH_TO_SETTINGS = "../settings.json"
 PATH_TO_DATABASE = "./data.db"
 
 def get_db():
@@ -68,7 +69,7 @@ def generate_queued_events():
             event_data = event_queue.get(timeout=1) # {event: "document1", data: {}}
             if "data" not in event_data: event_data['data'] = {}
             print(f"event:{event_data['event']}\\ndata:{json.dumps(event_data['data'])}\\n\\n")
-            # Типы ивентов: documents_table_update, document_update, settings_update
+            # Типы ивентов: documents_table_update, document_update, settings_update, model_status
             yield f"event:{event_data['event']}\ndata:{json.dumps(event_data['data'])}\n\n"
         except queue.Empty:
             yield "data: \n\n" # Пустое сообщение для keep-alive
@@ -114,7 +115,6 @@ def get_document_info(id):
         data = {"items":doc}
         if doc:
             return jsonify(data)
-    print('get_document_by_id: Wrong id provided')
     return jsonify({"error": f"Документ с ID {id} не найден."}), 404
 
 # ---------- 4. Содержимое документа ----------
@@ -129,7 +129,6 @@ def get_document(document_id, offset, amount):
     if blocks:
         return jsonify(blocks), 200
     else:
-        print('get_document: Wrong id provided')
         return jsonify({"error": f"Документ с ID {document_id} не найден."}), 404
     
 # ---------- 5. Изменить список документов ----------
@@ -180,7 +179,7 @@ def api_analise_document(document_id):
             set_copy = None
             with settings_lock:
                 set_copy = {**settings}
-            analise_document(db, document_id, model, smooth_type=set_copy["current_smooth_type"], result_getter_type=set_copy["current_result_getter_type"],) # dividion_type, smooth_type, result_getter_type, model_name
+            analise_document(db, document_id, model, smooth_type=set_copy["current_smooth_type"], result_getter_type=set_copy["current_result_getter_type"], ) # dividion_type, smooth_type, result_getter_type, model_name
             event_queue.put({"event": "document_update", "data": {"document_id": document_id}})
         return jsonify({"status":"success"}), 200
     except RuntimeError as e:
@@ -198,7 +197,7 @@ def change_settings():
         return jsonify({"error": "Request body is empty"}), 400
     with settings_lock:
         for el in data.keys():
-            if data[el] != None:
+            if data[el] != None and data[el] != "":
                 settings[el] = data[el]
         print(settings)
     event_queue.put({"event": "settings_update"})
@@ -218,12 +217,18 @@ def start_ai():
                 model.model_name = settings["current_model_name"]
             if model.division_type != settings["current_division_type"]:
                 model.division_type = settings["current_division_type"]
+        event_queue.put({"event": "model_status", "data": {"status": "loading"}})
         model.load()
+        event_queue.put({"event": "model_status", "data": {"status": "loaded"}})
+    return jsonify({"status":"success"}), 200
 
 
 @app.route('/api/ai/stop', methods=['POST'])
 def stop_ai():
-    model.unload()
+    with model_lock:
+        model.unload()
+        event_queue.put({"event": "model_status", "data": {"status": "unloaded"}})
+    return jsonify({"status":"success"}), 200
 
 if __name__ == '__main__':
     # Запуск Flask-приложения в режиме отладки.

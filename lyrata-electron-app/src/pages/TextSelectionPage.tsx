@@ -1,7 +1,7 @@
 import "./TextSelectionPage.css";
 import Menu from "../components/Menu";
 import { useCallback, useContext } from "react";
-import { db_analise, db_delete, db_save } from "../utils/requests";
+import { db_analise, db_delete, db_save, empty_post } from "../utils/requests";
 import { SSEContext } from "../utils/SSEContext";
 
 interface TextSelectionPageProps {}
@@ -9,6 +9,7 @@ interface TextSelectionPageProps {}
 const TextSelectionPage = ({}: TextSelectionPageProps) => {
   const storage = useContext(SSEContext);
   const document_list = storage.document_list[0];
+  const model_status = storage.model_status;
 
   const handleAddDocument = useCallback(() => {
     const path = "/home/albionvisual/Projects/Lyrata/docs/big_text_2.md";
@@ -42,7 +43,7 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
       const index = storage.document_list[0].findIndex((el) => el[0] === newId);
       if (newId >= 0 && index !== -1) {
         storage.current_document[1](storage.document_list[0][index]);
-      } else if (newId === -1) handleAddDocument();
+      } else if (newId === -2) handleAddDocument();
     },
     [handleAddDocument, storage.document_list, storage.current_document]
   );
@@ -57,15 +58,48 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
             document_list
               ? [
                   {
-                    id: -2,
+                    id: -3,
                     text: <h2>Выберите текст</h2>,
                   },
                   {
-                    id: -1,
+                    id: -2,
                     text: (
                       <div className="FlexContainer TextSelectionAddButton">
                         <>Хотите свой текст?</>
                         <div>Добавить</div>
+                      </div>
+                    ),
+                  },
+                  {
+                    id: -1,
+                    text: (
+                      <div className="FlexContainer TextSelectionModelButton">
+                        {model_status === "unloaded" ? (
+                          <>
+                            <div>Нейронные сети не активны</div>
+                            <div
+                              onClick={() => {
+                                empty_post("ai/start");
+                              }}>
+                              Загрузить их для работы
+                            </div>
+                          </>
+                        ) : model_status === "loaded" ? (
+                          <>
+                            <div>Неронные сети загружены</div>
+                            <div
+                              onClick={() => {
+                                empty_post("ai/stop");
+                              }}>
+                              Выгрузить их для производительности
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>Нейронные сети запускаются</div>
+                            <div>подождите...</div>
+                          </>
+                        )}
                       </div>
                     ),
                   },

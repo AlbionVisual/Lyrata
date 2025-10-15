@@ -57,3 +57,7 @@ export function db_delete(url: string) {
 export function db_analise(document_id: number) {
   db_save(`database/document/${document_id}/analise`);
 }
+
+export function empty_post(url: string) {
+  db_fetch(url, {}, "POST");
+}

@@ -46,6 +46,9 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
   const [documentListProperties, setDocumentListProperties] = useState<
     DocumentProperties[]
   >([]);
+  const [modelStatus, setModelStatus] = useState<
+    "loaded" | "unloaded" | "loading"
+  >("unloaded");
   const [currentText, setCurrentText] = useState<DatabaseTextBlock[]>([]);
   const [documentList, presetDocumentList] = useState<DatabaseDocument[]>([]);
   const [currentDivisionType, setCurrentDivisionType] = useState("");
@@ -194,6 +197,14 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
     [documentListProperties, currentDocument, requestCurrentText]
   );
 
+  const onModelStatusUpdate = useCallback((event: MessageEvent<any>) => {
+    const new_status = JSON.parse(event.data).status;
+    if (event.data && new_status !== undefined) {
+      setModelStatus(new_status);
+      return;
+    }
+  }, []);
+
   const onSettingsUpdate = useCallback(
     (event: any | null, type: string = "", new_val: any = "") => {
       if (event === null && type && new_val !== "") {
@@ -263,6 +274,7 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
     );
 
     eventSource.current.addEventListener("document_update", onDocumentUpdate);
+    eventSource.current.addEventListener("model_status", onModelStatusUpdate);
     // eventSource.current.addEventListener("settings_update", onSettingsUpdate);
     return () => {
       if (!eventSource.current) return;
@@ -274,12 +286,16 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
         "documents_table_update",
         documentListUpdater
       );
+      eventSource.current.removeEventListener(
+        "model_status",
+        onModelStatusUpdate
+      );
       // eventSource.current.removeEventListener(
       //   "settings_update",
       //   onSettingsUpdate
       // );
     };
-  }, [documentListUpdater, onDocumentUpdate]);
+  }, [documentListUpdater, onDocumentUpdate, onModelStatusUpdate]);
 
   // Синхронизатор настроек
   useEffect(() => {
@@ -312,6 +328,7 @@ function SSEContextProvider({ children }: SSEContextProviderProps) {
           setDocumentListProperties,
         ],
         current_text: [currentText, requestCurrentText],
+        model_status: modelStatus,
       }}>
       {subComponents}
     </SSEContext.Provider>

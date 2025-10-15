@@ -2,10 +2,11 @@
   display: flex;
   width: 100%;
   justify-content: space-between;
+  border-bottom: dashed black 0.2px;
 }
 
 .SettingName {
-  max-width: 20vw;
+  max-width: 40vw;
 }
 
 .SettingList {

@@ -11,6 +11,6 @@
     width: 80vw;
 }
 
-.TextSelectionAddButton {
+.TextSelectionAddButton, .TextSelectionModelButton {
     font-size: medium;
 }

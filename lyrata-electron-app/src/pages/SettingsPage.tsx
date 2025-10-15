@@ -113,7 +113,7 @@ const ENCRYPTOR: SettingValue[] = [
     actual_value: true,
     visible_name: "Включить",
     tooltip:
-      'Буквы в тексте спереди будут заменены с сохранением глассности звуков, т. к. "а" заменится на случайную глассную, возможно даже и "а", но не на согласную',
+      'Буквы в тексте спереди будут заменены с сохранением глассности звуков, т. о. "а" заменится на случайную глассную, которая может оказаться и самой буквой "а", но точно не сможет поменяться на согласную',
   },
   {
     actual_value: false,
@@ -132,19 +132,19 @@ function SettingsPage() {
     () => [
       {
         id: 1,
-        name: "Нейронная сеть",
+        name: "Какую нейронную сеть вы хотите использовать для анализа?",
         values: MODELS,
         selected: storage.settings.current_model_name,
       },
       {
         id: 4,
-        name: "Тип деления",
+        name: "Как будет делиться текст при анализе?",
         values: DIVIDERS,
         selected: storage.settings.current_division_type,
       },
       {
         id: 7,
-        name: "Подсветка эмоций",
+        name: "Расскрашивать ли проанализированный текст?",
         values: EMOTION_HIHGLIGHTER,
         selected: storage.settings.color_emotions,
       },
@@ -162,7 +162,7 @@ function SettingsPage() {
       },
       {
         id: 13,
-        name: "Размер выделения",
+        name: "Какого размера вы хотите выделение в тексте?",
         value: storage.settings.text_selection_size,
         tooltip:
           "Размер выделения при чтении текста в количестве символов. К этому значению будет стремится реальное выделение, которое будет увеличиваться, чтобы взять полностью наполовину выделенные слова",
@@ -171,7 +171,7 @@ function SettingsPage() {
       },
       {
         id: 16,
-        name: "Величина смещения",
+        name: "Насколько далеко вы хотите смещать выделение текста?",
         value: storage.settings.text_selection_step,
         tooltip:
           "На сколько символов перемещать выделение вперёд? Как и в настройке выше, к этому значению реальное выделение будет лишь стремиться",
@@ -207,7 +207,7 @@ function SettingsPage() {
         useHigherIndexes={true}
         onSelectionChange={setSelected}
         menuPositions={[
-          { id: 0, text: <h2>Что-то не так?..</h2> },
+          { id: 0, text: <h2>Что-то хотите изменить?</h2> },
           ...setting_list.map((el) => {
             return {
               id: el.id,

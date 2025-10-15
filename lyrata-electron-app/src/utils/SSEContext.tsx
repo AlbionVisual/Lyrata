@@ -28,6 +28,7 @@ interface ContextStorage {
     DatabaseTextBlock[],
     (new_offset: number, amount: number) => void
   ];
+  model_status: "loaded" | "unloaded" | "loading";
 }
 
 /**
@@ -48,4 +49,5 @@ export const SSEContext = React.createContext<ContextStorage>({
   document_list: [[], () => {}],
   documents_properties: [[], () => {}],
   current_text: [[], () => {}],
+  model_status: "unloaded",
 });
