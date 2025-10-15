@@ -10,7 +10,7 @@
  */
 import { useContext, useMemo, useState } from "react";
 import "./MainMenu.css";
-import Menu from "./Menu";
+import Menu from "../components/Menu";
 import { SSEContext } from "../utils/SSEContext";
 
 const AvailableSelections = ["name", "read", "text", "music", "settings"];
@@ -25,8 +25,8 @@ function MainMenu({ onPageChange }: MainMenuProps) {
   const storage = useContext(SSEContext);
 
   const isTextChoosed = useMemo<Boolean>(
-    () => storage.settings.current_document[0][0] !== -1,
-    [storage.settings.current_document[0]]
+    () => storage.current_document[0][0] !== -1,
+    [storage.current_document]
   );
 
   const MenuPositions = [
@@ -34,7 +34,7 @@ function MainMenu({ onPageChange }: MainMenuProps) {
       id: 1,
       name: "read",
       text: isTextChoosed ? (
-        `Читать (${storage.settings.current_document[0][1]})`
+        `Читать (${storage.current_document[0][1]})`
       ) : (
         <i>Для чтения выберите текст...</i>
       ),

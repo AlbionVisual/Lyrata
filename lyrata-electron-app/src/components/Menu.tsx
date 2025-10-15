@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import "./Menu.css";
 
 interface MenuProps {
-  menuPositions: { id: number; text: string | React.ReactNode }[];
+  menuPositions: { id: number; text: React.ReactNode }[];
   selectedId?: number;
+  maxId?: number;
   onItemActivate?: (id: number) => void;
   onSelectionChange?: (id: number) => void;
   enableEvents?: boolean;
+  useHigherIndexes?: boolean;
   selectionMoveType?: "indexed" | "elemented";
 }
 
@@ -14,27 +16,33 @@ function Menu({
   menuPositions,
   onItemActivate,
   onSelectionChange,
-  selectedId = 0,
+  selectedId,
+  maxId,
   enableEvents = true,
   selectionMoveType = "indexed",
+  useHigherIndexes = false,
 }: MenuProps) {
-  const [locallySelectedId, setLocallySelectedId] =
-    useState<number>(selectedId);
+  const [locallySelectedId, setLocallySelectedId] = useState<number>(
+    selectedId === undefined ? menuPositions[0].id : selectedId
+  );
 
   const handelKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!enableEvents) return;
-      let buffSelection = locallySelectedId;
+      let buffSelection =
+        selectedId !== undefined ? selectedId : locallySelectedId;
 
       switch (event.key) {
         case "ArrowDown":
         case "ArrowRight":
           if (selectionMoveType === "indexed") {
             let len = menuPositions[0].id;
-            menuPositions.forEach((data) => {
-              if (len < data.id) len = data.id;
-            });
-            len += 1;
+            if (!maxId) {
+              menuPositions.forEach((data) => {
+                if (len < data.id) len = data.id;
+              });
+              len += 1;
+            } else len = maxId + 1;
             buffSelection =
               buffSelection + 1 >= len ? buffSelection : buffSelection + 1;
           } else {
@@ -70,9 +78,18 @@ function Menu({
           return;
       }
       if (onSelectionChange) onSelectionChange(buffSelection);
-      else setLocallySelectedId(buffSelection);
+      setLocallySelectedId(buffSelection);
     },
-    [locallySelectedId, menuPositions]
+    [
+      locallySelectedId,
+      menuPositions,
+      enableEvents,
+      maxId,
+      onItemActivate,
+      onSelectionChange,
+      selectionMoveType,
+      selectedId,
+    ]
   );
 
   // Вешание ивентов на окно
@@ -84,13 +101,24 @@ function Menu({
     };
   }, [handelKeyDown]);
 
+  const real_selected = useMemo(() => {
+    const selection = selectedId !== undefined ? selectedId : locallySelectedId;
+    if (useHigherIndexes) {
+      let last_id = menuPositions[0].id;
+      menuPositions.forEach((data) => {
+        if (last_id < data.id && data.id <= selection) last_id = data.id;
+      });
+      return last_id;
+    } else return selection;
+  }, [locallySelectedId, selectedId, menuPositions, useHigherIndexes]);
+
   return (
     <div className="Menu">
       {menuPositions.map((data, index) => (
         <div
           key={index}
           className={
-            locallySelectedId === data.id
+            real_selected === data.id
               ? "MenuListItem MenuItemselected"
               : "MenuListItem MenuItemDeselected"
           }
@@ -99,7 +127,7 @@ function Menu({
           }}
           onMouseEnter={(e) => {
             if (onSelectionChange) onSelectionChange(data.id);
-            else setLocallySelectedId(data.id);
+            setLocallySelectedId(data.id);
           }}>
           {data.text}
         </div>

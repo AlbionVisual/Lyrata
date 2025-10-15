@@ -11,6 +11,10 @@
     color: black;
 }
 
+.MenuListItem:last-child {
+  margin-bottom: 0;
+}
+
 .MenuItemSelected {
     opacity: 100%;
 }

@@ -1,5 +1,5 @@
 import "./TextSelectionPage.css";
-import Menu from "./Menu";
+import Menu from "../components/Menu";
 import { useCallback, useContext } from "react";
 import { db_analise, db_delete, db_save } from "../utils/requests";
 import { SSEContext } from "../utils/SSEContext";
@@ -41,14 +41,10 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
     (newId: number) => {
       const index = storage.document_list[0].findIndex((el) => el[0] === newId);
       if (newId >= 0 && index !== -1) {
-        storage.settings.current_document[1](storage.document_list[0][index]);
+        storage.current_document[1](storage.document_list[0][index]);
       } else if (newId === -1) handleAddDocument();
     },
-    [
-      handleAddDocument,
-      storage.document_list,
-      storage.settings.current_document,
-    ]
+    [handleAddDocument, storage.document_list, storage.current_document]
   );
 
   return (
@@ -57,7 +53,6 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
         <Menu
           onItemActivate={handleActivation}
           selectionMoveType={"elemented"}
-          selectedId={-1}
           menuPositions={
             document_list
               ? [
@@ -79,7 +74,7 @@ const TextSelectionPage = ({}: TextSelectionPageProps) => {
                       id: el[0],
                       text: (
                         <div className="FlexContainer">
-                          {el[0] === storage.settings.current_document[0][0] ? (
+                          {el[0] === storage.current_document[0][0] ? (
                             <b>{el[1]}</b>
                           ) : (
                             <div>{el[1]}</div>

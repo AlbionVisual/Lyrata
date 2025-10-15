@@ -1,19 +1,46 @@
-import React, { useRef, useMemo, useContext } from "react";
+import React, { useRef, useMemo, useContext, useCallback } from "react";
 import { SSEContext } from "../utils/SSEContext";
-import { DatabaseEmotion } from "../utils/DatabaseTypes";
+import { DatabaseDocument, DatabaseEmotion } from "../utils/DatabaseTypes";
 import TextDrawer from "../components/TextDrawer";
 import "./ReadingPage.css";
 import TextSelectionController from "../components/TextSelectionController";
+import { db_update } from "../utils/requests";
 
-interface ReadingPageProps {}
-
-function ReadingPage({}: ReadingPageProps) {
+function ReadingPage() {
   const firstActivation = useRef(true);
 
   // Получение данных
   const storage = useContext(SSEContext);
-  const currentText = storage.current_text[0];
-  const currentTextProperties = storage.settings.current_document[0];
+  const currentText = useMemo(() => storage.current_text[0], [storage]);
+  const currentTextProperties = useMemo(
+    () => storage.current_document[0],
+    [storage]
+  );
+  const currentTextPropertiesUpdater = useMemo(
+    () => storage.current_document[1],
+    [storage.current_document]
+  );
+  const update_progress = useCallback(
+    (new_progress: number) => {
+      if (new_progress !== currentTextProperties[5]) {
+        currentTextProperties[5] = new_progress;
+        currentTextPropertiesUpdater(currentTextProperties);
+        db_update(`database/document/${currentTextProperties[0]}/progress`, {
+          progress: new_progress,
+        });
+      }
+    },
+    [currentTextProperties, currentTextPropertiesUpdater]
+  );
+  const colorEmotions = useMemo(
+    () => storage.settings.color_emotions[0],
+    [storage]
+  );
+  const encrypt = useMemo(() => storage.settings.encrypt_text[0], [storage]);
+  const sel_size = storage.settings.text_selection_size[0];
+  const textSelectionSize = useMemo(() => sel_size, [sel_size]);
+  const sel_step = storage.settings.text_selection_step[0];
+  const textSelectionStep = useMemo(() => sel_step, [sel_step]);
 
   // Рендерер текста по структуре данных
   const gened_text = useMemo((): [React.ReactNode, number] => {
@@ -36,7 +63,9 @@ function ReadingPage({}: ReadingPageProps) {
               rawText={subel_content}
               indexOffset={currentTextOffset}
               data={subel_data}
-              defualtEmotion={lastEmotion}></TextDrawer>
+              defualtEmotion={lastEmotion}
+              colorEmotions={colorEmotions}
+              encrypt={encrypt}></TextDrawer>
           );
           if (subel_data) {
             const keysAsStrings = Object.keys(subel_data);
@@ -65,7 +94,7 @@ function ReadingPage({}: ReadingPageProps) {
     };
 
     return [get_children(), currentTextOffset];
-  }, [currentText]);
+  }, [currentText, colorEmotions, encrypt]);
 
   if (firstActivation.current) {
     firstActivation.current = false;
@@ -75,8 +104,11 @@ function ReadingPage({}: ReadingPageProps) {
   return (
     <div className="ReadingPage">
       <TextSelectionController
+        selectionSize={textSelectionSize}
+        selectionStep={textSelectionStep}
         currentTextProperties={currentTextProperties}
-        textSize={gened_text[1]}>
+        textSize={gened_text[1]}
+        updateProgress={update_progress}>
         <div className="ReadingTextElement">{gened_text[0]} </div>
       </TextSelectionController>
     </div>

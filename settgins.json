@@ -1,6 +1,10 @@
 {
-    "division_type": "sentence",
-    "result_getter_type": "weighted",
-    "smooth_type": "distanced",
-    "model_name": 0
+    "current_division_type": "tokened",
+    "current_result_getter_type": "weighted",
+    "current_smooth_type": "distanced",
+    "current_model_name": "cointegrated/rubert-tiny2-cedr-emotion-detection",
+    "color_emotions": false,
+    "text_selection_size": 204,
+    "text_selection_step": 101,
+    "encrypt_text": false
 }

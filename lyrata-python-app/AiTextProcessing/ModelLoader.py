@@ -52,21 +52,21 @@ class ModelLoader:
         if self._division_type == 's': # Если нужно, подключаем spacy
             self._nlp = spacy.load("ru_core_news_sm")
         else:
-            del self.nlp
-            self.npl = None
+            if self._nlp is not None: del self._nlp
+            self._nlp = None
 
     def unload(self):
-        del self._tokenizer
-        del self.model
+        if self._tokenizer is not None: del self._tokenizer
+        if self._model is not None: del self._model
         self._tokenizer = None
         self._model = None
         self.labels = None
-        del self.nlp
+        if self._nlp is not None: del self._nlp
         self._nlp = None
 
     @property
     def loaded(self):
-        return self.model != None
+        return self._model != None
 
     @property
     def model_name(self):
@@ -95,5 +95,5 @@ class ModelLoader:
                 if self._division_type == 's': # Если теперь нужно, подключаем spacy
                     self._nlp = spacy.load("ru_core_news_sm")
                 else:
-                    del self.nlp
-                    self.npl = None
+                    if self._nlp is not None: del self._nlp
+                    self._nlp = None

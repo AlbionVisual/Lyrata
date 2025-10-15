@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { HighlighterContext } from "../utils/HighlighterContext";
-import { db_update } from "../utils/requests";
 import ScrollableText from "./ScrollableText";
 import { DatabaseDocument } from "../utils/DatabaseTypes";
 
@@ -15,6 +14,7 @@ interface TextSelectionControllerProps {
   selectionStep?: number;
   currentTextProperties: DatabaseDocument;
   textSize: number;
+  updateProgress?: (new_progres: number) => void;
 }
 
 let magnetised: Boolean = false;
@@ -26,6 +26,7 @@ function TextSelectionController({
   selectionStep = 100,
   currentTextProperties,
   textSize,
+  updateProgress,
 }: TextSelectionControllerProps) {
   // Состояния для отправки в скроллер
   const [selectionPos, setSelectionPos] = useState<number>(
@@ -103,18 +104,21 @@ function TextSelectionController({
       setMagnetizeTo(selectionTag);
     }
   }, []);
+
   useEffect(() => {
     return () => {
       if (magnetised) {
-        db_update(`database/document/${currentTextProperties[0]}/progress`, {
-          progress: reading_progress
-            ? reading_progress
-            : currentTextProperties[5],
-        });
         magnetised = false;
       }
     };
-  }, [currentTextProperties]);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (updateProgress && reading_progress) updateProgress(reading_progress);
+    };
+  });
+
   return (
     <div className="TextSelectionController">
       <ScrollableText

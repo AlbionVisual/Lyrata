@@ -5,6 +5,7 @@ import PageLayout from "./components/PageLayout";
 import ReadingPage from "./pages/ReadingPage";
 import TextSelectionPage from "./pages/TextSelectionPage";
 import SSEContextProvider from "./components/SSEContextProvider";
+import SettingsPage from "./pages/SettingsPage";
 
 const AvailableSelections = ["menu", "read", "text", "music", "settings"];
 
@@ -39,8 +40,7 @@ function App() {
           </PageLayout>
         ) : AvailableSelections[currentPage] === "settings" ? (
           <PageLayout onGoBack={handlePageChange}>
-            Вы уже хотите изменений?! Но к сожалению настройки пока
-            недоступны...
+            <SettingsPage></SettingsPage>
           </PageLayout>
         ) : (
           <PageLayout onGoBack={handlePageChange}>

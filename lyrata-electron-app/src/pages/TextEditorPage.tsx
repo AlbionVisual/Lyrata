@@ -12,6 +12,7 @@ import ScrollableText from "../components/ScrollableText";
 import "./TextEditorPage.css";
 import { db_update } from "../utils/requests";
 import { SSEContext } from "../utils/SSEContext";
+import { emotion_to_color } from "../components/TextDrawer";
 
 interface TextEditorPageProps {
   selectionSize?: number;
@@ -22,22 +23,6 @@ interface Highlighter {
   startPos: number;
   endPos: number;
 }
-
-const emotion_to_color = (emotion: string) => {
-  switch (emotion) {
-    case "aggression":
-      return "#eedada";
-    case "anxiety":
-      return "#dadaee";
-    case "sarcasm":
-      return "#eeeeda";
-    case "positive":
-      return "#daeeda";
-    case "normal":
-    default:
-      return "#eeeeee";
-  }
-};
 
 const color_text = (
   content: string,
@@ -88,7 +73,7 @@ function TextEditorPage({
   // Получение данных
   const storage = useContext(SSEContext);
   const currentText = storage.current_text[0];
-  const currentTextProperties = storage.settings.current_document[0];
+  const currentTextProperties = storage.current_document[0];
 
   // Состояния для отправки в скроллер
   const [selectionPos, setSelectionPos] = useState<number>(

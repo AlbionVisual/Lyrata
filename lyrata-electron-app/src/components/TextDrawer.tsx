@@ -15,29 +15,73 @@ interface TextDrawerProps {
   indexOffset: number;
   rawText: string;
   data: DataEmotionMap;
+  colorEmotions?: boolean;
   defualtEmotion: DatabaseEmotion;
+  encrypt?: boolean;
 }
 
-const emotion_to_color = (emotion: string) => {
+export const emotion_to_color = (emotion: string) => {
   switch (emotion) {
     case "aggression":
+    case "anger":
       return "#eedada";
     case "anxiety":
+    case "fear":
+    case "sadness":
       return "#dadaee";
     case "sarcasm":
+    case "surprise":
       return "#eeeeda";
     case "positive":
+    case "joy":
       return "#daeeda";
     case "normal":
+    case "neutral":
+    case "no_emotion":
     default:
       return "#eeeeee";
   }
+};
+
+const encrypt_string = (text: string) => {
+  const key = 7;
+  let res = "";
+  const vowels = "аеёиоуыэя";
+  const vowels_high = vowels.toUpperCase();
+  const consonants_slim = "бвгдзйклнпрстхцчъь";
+  const consonants_slim_high = consonants_slim.toUpperCase();
+  const consonants_wide = "жмфшщю";
+  const consonants_wide_high = consonants_wide.toLocaleUpperCase();
+  const alphabets = [
+    vowels,
+    vowels_high,
+    consonants_slim,
+    consonants_slim_high,
+    consonants_wide,
+    consonants_wide_high,
+  ];
+  for (let i = 0; i < text.length; i++) {
+    let pasted = false;
+    for (let j = 0; j < alphabets.length && !pasted; j++) {
+      if (alphabets[j].includes(text[i])) {
+        res +=
+          alphabets[j][
+            (alphabets[j].indexOf(text[i]) + key) % alphabets[j].length
+          ];
+        pasted = true;
+      }
+    }
+    if (!pasted) res += text[i];
+  }
+  return res;
 };
 
 const color_text = (
   content: string,
   data: DataEmotionMap,
   lastEmotion: DatabaseEmotion,
+  color_emotions: boolean = true,
+  encrypt: boolean = false,
   indexOffset: number = 0
 ): [React.ReactNode, DatabaseEmotion] => {
   let ai = 0;
@@ -47,17 +91,23 @@ const color_text = (
       lastEmotion = data[ind][0];
       continue;
     }
+    let text = content.slice(ai, Number(ind) - indexOffset);
+    if (encrypt) text = encrypt_string(text);
     res.push(
-      <span style={{ color: emotion_to_color(lastEmotion) }}>
-        {content.slice(ai, Number(ind) - indexOffset)}
+      <span
+        style={color_emotions ? { color: emotion_to_color(lastEmotion) } : {}}>
+        {text}
       </span>
     );
     ai = Number(ind) - indexOffset;
     lastEmotion = data[ind][0];
   }
+  let text = content.slice(ai);
+  if (encrypt) text = encrypt_string(text);
   res.push(
-    <span style={{ color: emotion_to_color(lastEmotion) }}>
-      {content.slice(ai)}
+    <span
+      style={color_emotions ? { color: emotion_to_color(lastEmotion) } : {}}>
+      {text}
     </span>
   );
   return [
@@ -75,10 +125,15 @@ function TextDrawer({
   rawText,
   data,
   defualtEmotion,
+  colorEmotions = false,
+  encrypt = false,
 }: TextDrawerProps) {
   const highlighterStorage = useContext(HighlighterContext);
   const selectionTagRef = useRef<HTMLDivElement>(null);
   const containsSelection = useRef<boolean>(false);
+  const selectionHigher = useRef<boolean>(
+    indexOffset > highlighterStorage.endPos
+  );
   const [reasonableHighlighterPos, setReasonableHighlighterPos] =
     useState<Highlighter>({
       startPos: -1,
@@ -108,6 +163,7 @@ function TextDrawer({
     if (containsSelection.current) {
       setReasonableHighlighterPos({ startPos: -1, endPos: -1 });
       containsSelection.current = false;
+      selectionHigher.current = indexOffset > highlighterStorage.endPos;
     }
   }
 
@@ -119,6 +175,7 @@ function TextDrawer({
       reasonableHighlighterPos.startPos,
       reasonableHighlighterPos.endPos,
     ];
+
     const [s1, s2] = [indexOffset, indexOffset + rawText.length];
     if (Math.max(s1, h1) < Math.min(s2, h2)) {
       let beforeSelection: React.ReactNode = "",
@@ -133,7 +190,9 @@ function TextDrawer({
         [beforeSelection, lastEmotion] = color_text(
           rawText.slice(0, a1),
           data,
-          lastEmotion
+          lastEmotion,
+          colorEmotions,
+          encrypt && false
         );
         reffed = true;
       }
@@ -145,6 +204,8 @@ function TextDrawer({
           rawText.slice(a2),
           data,
           lastEmotion,
+          colorEmotions,
+          encrypt && true,
           a2
         );
       }
@@ -162,7 +223,13 @@ function TextDrawer({
         </>
       );
     } else {
-      [ans, lastEmotion] = color_text(rawText, data, lastEmotion);
+      [ans, lastEmotion] = color_text(
+        rawText,
+        data,
+        lastEmotion,
+        colorEmotions,
+        encrypt && selectionHigher.current
+      );
     }
     return ans;
   }, [
@@ -172,6 +239,8 @@ function TextDrawer({
     reasonableHighlighterPos.startPos,
     indexOffset,
     rawText,
+    colorEmotions,
+    encrypt,
   ]);
 
   useLayoutEffect(() => {

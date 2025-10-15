@@ -93,6 +93,8 @@ class TextDivider(ModelLoader):
             while int(el[-ind][1]) == 0 and ind < len(el): ind += 1
             high = int(el[-ind][1])
             self._batch_offsets += [[low, high + 1]]
+        
+        self.parse_batch_offsets()
 
         # Форматируем входные данные, чтобы тип совпадал с prepare_raw_batches
         new_batches = []
@@ -168,4 +170,14 @@ class TextDivider(ModelLoader):
         if type(new_intersection_amount) is not int: raise ValueError("You can set only integer amount")
         self._batch_intersection = new_intersection_amount
 
-        
+    @ModelLoader.division_type.setter
+    def division_type(self, new_type):
+        if new_type[:2] not in ["se", "pa", "to", "s", "p", "t"]:
+            print(f"You cannot provide \"{new_type}\" as division type! You can use only \"sentence\" | \"paragraph\" | \"tokens\". Not changing")
+        elif new_type[0] == self._division_type:return
+        else:
+            self._division_type = new_type[0]
+            if self._model is not None:
+                self.load()
+            self._batch_size = DEFAULT_BATCH_SIZES[self._division_type]
+            self._batch_intersection = int(self._batch_size * 0.8)

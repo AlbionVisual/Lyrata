@@ -15,10 +15,10 @@ import os
 event_queue = queue.Queue()
 
 settings = {
-    "division_type": "sentence", # sentence | paragraph | tokened
-    "result_getter_type": "weighted", # weighted | average
-    "smooth_type": "distanced", # direct | distanced
-    "model_name": 0
+    "current_division_type": "sentence", # sentence | paragraph | tokened
+    "current_result_getter_type": "weighted", # weighted | average
+    "current_smooth_type": "distanced", # direct | distanced
+    "current_model_name": "Kostya165/rubert_emotion_slicer"
 } # Здесь по умолчанию
 settings_lock = threading.Lock()
 model_lock = threading.Lock()
@@ -38,16 +38,17 @@ def get_db():
 @app.teardown_request
 def close_connection(exception):
     g.pop('db', None)
-
+ 
 def save_settings_json():
+    print(settings)
     try:
-        os.makedirs(os.path.dirname(PATH_TO_SETTINGS), exist_ok=True)
-        with open(PATH_TO_SETTINGS, 'w', encoding='utf-8') as f:
-            json.dump(settings, f, indent=4, ensure_ascii=False)
-        print(f"Настройки успешно сохранены в {PATH_TO_SETTINGS}")
+        with settings_lock:
+            os.makedirs(os.path.dirname(PATH_TO_SETTINGS), exist_ok=True)
+            with open(PATH_TO_SETTINGS, 'w', encoding='utf-8') as f:
+                json.dump(settings, f, indent=4, ensure_ascii=False)
+            print(f"Настройки успешно сохранены в {PATH_TO_SETTINGS}")
     except IOError as e:
         print(f"Ошибка при сохранении настроек в {PATH_TO_SETTINGS}: {e}")
-atexit.register(save_settings_json)
 
 def load_settings_json() -> dict:
     global settings
@@ -179,7 +180,7 @@ def api_analise_document(document_id):
             set_copy = None
             with settings_lock:
                 set_copy = {**settings}
-            analise_document(db, document_id, model, smooth_type=set_copy["smooth_type"], result_getter_type=set_copy["result_getter_type"],) # dividion_type, smooth_type, result_getter_type, model_name
+            analise_document(db, document_id, model, smooth_type=set_copy["current_smooth_type"], result_getter_type=set_copy["current_result_getter_type"],) # dividion_type, smooth_type, result_getter_type, model_name
             event_queue.put({"event": "document_update", "data": {"document_id": document_id}})
         return jsonify({"status":"success"}), 200
     except RuntimeError as e:
@@ -191,14 +192,15 @@ def api_analise_document(document_id):
 
 @app.route('/api/settings', methods=['PUT'])
 def change_settings():
+    global settings
     data = request.json
     if not data:
         return jsonify({"error": "Request body is empty"}), 400
     with settings_lock:
         for el in data.keys():
-            if data[el]:
-                if (type(data[el]) == list and data[el][0] == -1): continue
+            if data[el] != None:
                 settings[el] = data[el]
+        print(settings)
     event_queue.put({"event": "settings_update"})
     return jsonify({"status": "success"}), 200
 
@@ -212,10 +214,10 @@ def get_settings():
 def start_ai():
     with model_lock:
         with settings_lock:
-            if model.model_name != MODELS[settings["model_name"]]:
-                model.model_name = MODELS[settings["model_name"]]
-            if model.division_type != settings["division_type"]:
-                model.division_type = settings["division_type"]
+            if model.model_name != settings["current_model_name"]:
+                model.model_name = settings["current_model_name"]
+            if model.division_type != settings["current_division_type"]:
+                model.division_type = settings["current_division_type"]
         model.load()
 
 
@@ -226,4 +228,7 @@ def stop_ai():
 if __name__ == '__main__':
     # Запуск Flask-приложения в режиме отладки.
     load_settings_json()
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        atexit.register(save_settings_json)
+
     app.run(debug=True, port=5000)

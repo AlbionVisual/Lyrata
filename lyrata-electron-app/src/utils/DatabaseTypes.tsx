@@ -1,5 +1,5 @@
 /**
- * Строка в базе данных, таблицы `documents`. `id`, `name`, `author`, `created_at`, `updated_at`
+ * Строка в базе данных, таблицы `documents`. `id`, `name`, `author`, `created_at`, `updated_at`, `progress`
  */
 export type DatabaseDocument = [number, string, string, string, string, number];
 
@@ -39,7 +39,14 @@ export type DatabaseTextBlock = [
 ];
 
 export type DatabaseEmotion =
+  | "joy"
+  | "sadness"
+  | "surprise"
+  | "fear"
+  | "anger"
+  | "no_emotion"
   | "aggression"
+  | "neutral"
   | "positive"
   | "normal"
   | "negative"
